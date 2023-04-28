@@ -4,7 +4,6 @@ import cors from 'cors';
 import fetch from 'node-fetch';
 import HttpsProxyAgent from 'https-proxy-agent';
 import bodyParser from 'body-parser';
-git clone https://github.com/AyongNice/ayongChatGpt /var/www/ayongChatGpt
 
 const API_KEY = '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'; // 替换为您的 OpenAI API 密钥
 
