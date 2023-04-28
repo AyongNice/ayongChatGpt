@@ -1,5 +1,10 @@
 {
   "type": "module",
+  "scripts": {
+    "serve": "node ./src/index.js",
+    "startwei": "node ./src/weicaht.js",
+    "starth5": "node ./src/open-ai.html"
+  },
   "dependencies": {
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
@@ -7,6 +12,7 @@
     "fetch": "^1.1.0",
     "https-proxy-agent": "^5.0.1",
     "node-fetch": "^3.3.1",
-    "openai": "^3.2.1"
+    "openai": "^3.2.1",
+    "wechat-api": "^1.35.1"
   }
 }

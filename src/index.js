@@ -5,7 +5,7 @@ import fetch from 'node-fetch';
 import HttpsProxyAgent from 'https-proxy-agent';
 import bodyParser from 'body-parser';
 
-const API_KEY = ''; // 替换为您的 OpenAI API 密钥
+const API_KEY = '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'; // 替换为您的 OpenAI API 密钥
 
 const proxy = 'http://127.0.0.1:7890'; // 代理地址
 const openAIurl = "https://api.openai.com/v1/chat/completions"; //openAi 地址
