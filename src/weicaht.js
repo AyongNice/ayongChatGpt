@@ -23,33 +23,31 @@ const API_KEY = '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'; // 替换
 
 const api = new WechatApi(config.appid, config.secret);
 
-let isChect =true
+let isChect = true
 // 配置路由，用于接收 GET 请求，进行微信公众号的验证
-if(isChect){
-    app.get('/', function (req, res) {
-        console.log('get访问')
-        isChect =false
-        const query = req.query;
-        const signature = query.signature;
-        const timestamp = query.timestamp;
-        const nonce = query.nonce;
-        const echostr = query.echostr;
-        const token = config.token;
+app.get('/', function (req, res) {
+    console.log('get访问')
+    isChect = false
+    const query = req.query;
+    const signature = query.signature;
+    const timestamp = query.timestamp;
+    const nonce = query.nonce;
+    const echostr = query.echostr;
+    const token = config.token;
 
-        const array = [token, timestamp, nonce];
-        array.sort();
-        const str = array.join('');
-        const sha1 = crypto.createHash('sha1');
-        sha1.update(str);
-        const result = sha1.digest('hex');
+    const array = [token, timestamp, nonce];
+    array.sort();
+    const str = array.join('');
+    const sha1 = crypto.createHash('sha1');
+    sha1.update(str);
+    const result = sha1.digest('hex');
 
-        if (result === signature) {
-            res.send(echostr);
-        } else {
-            res.send('mismatch');
-        }
-    });
-}
+    if (result === signature) {
+        res.send(echostr);
+    } else {
+        res.send('mismatch');
+    }
+});
 
 // app.use(function(req, res, next) {
 //     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -87,7 +85,7 @@ app.post('/', function (req, res) {
                 "model": "gpt-3.5-turbo",
                 "messages": [{
                     "role": "user",
-                    "content":content
+                    "content": content
                 }],
                 "temperature": 0.7 //此数据 代表这 模型答案匹配精确度  数字越高精度越高
             };
@@ -102,7 +100,7 @@ app.post('/', function (req, res) {
                 });
                 // 解析响应数据为 JSON 格式
                 const responseData = await response.json();
-                console.log("responseData",JSON.stringify(responseData.choices) )
+                console.log("responseData", JSON.stringify(responseData.choices))
                 const replyMessage = {
                     xml: {
                         ToUserName: fromUsername,
@@ -119,7 +117,7 @@ app.post('/', function (req, res) {
                 res.set('Content-Type', 'text/xml');
                 res.send(xml);
             } catch (e) {
-                console.log('错误',e)
+                console.log('错误', e)
             }
 
         });
