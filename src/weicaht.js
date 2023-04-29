@@ -20,6 +20,7 @@ const openAIurl = "https://api.openai.com/v1/chat/completions"; //openAi 地址
 const API_KEY = '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'; // 替换为您的 OpenAI API 密钥
 
 // 实例化一个 WechatApi 对象
+
 const api = new WechatApi(config.appid, config.secret);
 
 // 配置路由，用于接收 GET 请求，进行微信公众号的验证
