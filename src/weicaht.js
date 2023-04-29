@@ -23,32 +23,37 @@ const API_KEY = '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'; // 替换
 
 const api = new WechatApi(config.appid, config.secret);
 
+let isChect =true
 // 配置路由，用于接收 GET 请求，进行微信公众号的验证
-// app.get('/', function (req, res) {
-//     console.log('get访问')
-//     const query = req.query;
-//     const signature = query.signature;
-//     const timestamp = query.timestamp;
-//     const nonce = query.nonce;
-//     const echostr = query.echostr;
-//     const token = config.token;
-//
-//     const array = [token, timestamp, nonce];
-//     array.sort();
-//     const str = array.join('');
-//     const sha1 = crypto.createHash('sha1');
-//     sha1.update(str);
-//     const result = sha1.digest('hex');
-//
-//     if (result === signature) {
-//         res.send(echostr);
-//     } else {
-//         res.send('mismatch');
-//     }
+if(isChect){
+    app.get('/', function (req, res) {
+        console.log('get访问')
+        isChect =false
+        const query = req.query;
+        const signature = query.signature;
+        const timestamp = query.timestamp;
+        const nonce = query.nonce;
+        const echostr = query.echostr;
+        const token = config.token;
+
+        const array = [token, timestamp, nonce];
+        array.sort();
+        const str = array.join('');
+        const sha1 = crypto.createHash('sha1');
+        sha1.update(str);
+        const result = sha1.digest('hex');
+
+        if (result === signature) {
+            res.send(echostr);
+        } else {
+            res.send('mismatch');
+        }
+    });
+}
+
+// app.use(function(req, res, next) {
+//     res.setHeader('Access-Control-Allow-Origin', '*');
 // });
-app.use(function(req, res, next) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-});
 
 const jsonObj = {
     person: {
