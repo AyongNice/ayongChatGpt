@@ -15,6 +15,7 @@ app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 
 app.get('/', (req, res) => {
+    console.log('get访问')
     const { signature, timestamp, nonce, echostr } = req.query
     const isValid = api.checkSignature({ signature, timestamp, nonce })
     if (isValid) {
@@ -25,6 +26,7 @@ app.get('/', (req, res) => {
 })
 
 app.post('/', (req, res) => {
+    console.log('post访问')
     const { signature, timestamp, nonce } = req.query
     const isValid = api.checkSignature({ signature, timestamp, nonce })
     if (isValid) {
