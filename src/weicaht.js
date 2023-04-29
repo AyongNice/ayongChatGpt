@@ -79,6 +79,14 @@ app.post('/', function (req, res) {
             const toUsername = json.xml.ToUserName;
             const content = json.xml.Content;
             const replyContent = '您好！欢迎关注我的公众号！';
+            const data = {
+                "model": "gpt-3.5-turbo",
+                "messages": [{
+                    "role": "user",
+                    "content":content
+                }],
+                "temperature": 0.7 //此数据 代表这 模型答案匹配精确度  数字越高精度越高
+            };
             try {
                 const response = await fetch(openAIurl, {
                     method: 'POST',
@@ -86,7 +94,7 @@ app.post('/', function (req, res) {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${API_KEY}`,
                     },
-                    body: JSON.stringify(req.body),
+                    body: JSON.stringify(data),
                 });
                 // 解析响应数据为 JSON 格式
                 const responseData = await response.json();
