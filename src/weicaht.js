@@ -63,28 +63,22 @@ app.post('/', function (req, res) {
             const fromUsername = json.xml.FromUserName;
             const toUsername = json.xml.ToUserName;
             const content = json.xml.Content;
-
-            if (content === '你好') {
-                const replyContent = '您好！欢迎关注我的公众号！';
-                const replyMessage = {
-                    xml: {
-                        ToUserName: fromUsername,
-                        FromUserName: toUsername,
-                        CreateTime: new Date().getTime(),
-                        MsgType: 'text',
-                        Content: replyContent,
-                    },
-                };
-                const builder = new xml2js.Builder({cdata: true});
-                // 将消息转换为 XML 格式
-                const xml = builder.buildObject(replyMessage);
-                // 设置响应头 Content-Type 为 text/xml
-                res.set('Content-Type', 'text/xml');
-                res.send(xml);
-            } else {
-                api.sendText(fromUsername, '我不知道你在说什么！');
-                res.send('');
-            }
+            const replyContent = '您好！欢迎关注我的公众号！';
+            const replyMessage = {
+                xml: {
+                    ToUserName: fromUsername,
+                    FromUserName: toUsername,
+                    CreateTime: new Date().getTime(),
+                    MsgType: 'text',
+                    Content: content,
+                },
+            };
+            const builder = new xml2js.Builder({cdata: true});
+            // 将消息转换为 XML 格式
+            const xml = builder.buildObject(replyMessage);
+            // 设置响应头 Content-Type 为 text/xml
+            res.set('Content-Type', 'text/xml');
+            res.send(xml);
         });
     });
 });
