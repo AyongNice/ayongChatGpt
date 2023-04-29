@@ -43,6 +43,10 @@ const api = new WechatApi(config.appid, config.secret);
 //         res.send('mismatch');
 //     }
 // });
+// app.use(function(req, res, next) {
+//     res.setHeader('Access-Control-Allow-Origin', '*');
+// });
+
 
 // 配置路由，用于接收 POST 请求，进行消息的处理和回复
 app.post('/', function (req, res) {
@@ -71,10 +75,11 @@ app.post('/', function (req, res) {
                         Content: replyContent,
                     },
                 };
-
-                const builder = new xml2js.Builder({rootName: 'xml', cdata: true, headless: true});
+                const builder = new xml2js.Builder({cdata: true});
+                // 将消息转换为 XML 格式
                 const xml = builder.buildObject(replyMessage);
-
+                // 设置响应头 Content-Type 为 text/xml
+                res.set('Content-Type', 'text/xml');
                 res.send(xml);
             } else {
                 api.sendText(fromUsername, '我不知道你在说什么！');
@@ -87,3 +92,4 @@ app.post('/', function (req, res) {
 app.listen(port, function () {
     console.log('Wechat app listening on port 80!');
 });
+
