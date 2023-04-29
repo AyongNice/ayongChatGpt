@@ -45,7 +45,7 @@ const api = new WechatApi(config.appid, config.secret);
 // });
 
 // 配置路由，用于接收 POST 请求，进行消息的处理和回复
-app.post('/ayong', function (req, res) {
+app.post('/', function (req, res) {
     console.log('post访问')
 
     const data = '';
