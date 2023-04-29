@@ -23,32 +23,32 @@ const API_KEY = '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'; // 替换
 const api = new WechatApi(config.appid, config.secret);
 
 // 配置路由，用于接收 GET 请求，进行微信公众号的验证
-// app.get('/', function (req, res) {
-//     console.log('get访问')
-//     const query = req.query;
-//     const signature = query.signature;
-//     const timestamp = query.timestamp;
-//     const nonce = query.nonce;
-//     const echostr = query.echostr;
-//     const token = config.token;
-//
-//     const array = [token, timestamp, nonce];
-//     array.sort();
-//     const str = array.join('');
-//     const sha1 = crypto.createHash('sha1');
-//     sha1.update(str);
-//     const result = sha1.digest('hex');
-//
-//     if (result === signature) {
-//         res.send(echostr);
-//     } else {
-//         res.send('mismatch');
-//     }
-// });
-// app.use(function(req, res, next) {
-//     res.setHeader('Access-Control-Allow-Origin', '*');
-// });
-//
+app.get('/', function (req, res) {
+    console.log('get访问')
+    const query = req.query;
+    const signature = query.signature;
+    const timestamp = query.timestamp;
+    const nonce = query.nonce;
+    const echostr = query.echostr;
+    const token = config.token;
+
+    const array = [token, timestamp, nonce];
+    array.sort();
+    const str = array.join('');
+    const sha1 = crypto.createHash('sha1');
+    sha1.update(str);
+    const result = sha1.digest('hex');
+
+    if (result === signature) {
+        res.send(echostr);
+    } else {
+        res.send('mismatch');
+    }
+});
+app.use(function(req, res, next) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+});
+
 const jsonObj = {
     person: {
         name: 'John',
@@ -66,9 +66,7 @@ console.log('xml', xml)
 // 配置路由，用于接收 POST 请求，进行消息的处理和回复
 app.post('/', function (req, res) {
     console.log('post访问')
-
     let data = '';
-
     req.setEncoding('utf8');
     req.on('data', function (chunk) {
         data += chunk;
@@ -98,6 +96,7 @@ app.post('/', function (req, res) {
                 });
                 // 解析响应数据为 JSON 格式
                 const responseData = await response.json();
+                console.log("responseData",JSON.stringify(responseData.choices) )
                 const replyMessage = {
                     xml: {
                         ToUserName: fromUsername,
