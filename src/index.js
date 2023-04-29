@@ -34,7 +34,7 @@ app.post(diyServeUrl, async (req, res) => {
                 'Authorization': `Bearer ${API_KEY}`,
             },
             body: JSON.stringify(req.body),
-            agent: agent // 设置代理
+            // agent: agent // 设置代理
         });
         // 解析响应数据为 JSON 格式
         const responseData = await response.json();
