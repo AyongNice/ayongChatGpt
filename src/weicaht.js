@@ -3,6 +3,7 @@ import request from 'request';
 import xml2js from 'xml2js';
 import WechatApi from 'wechat-api';
 import crypto from 'crypto';
+import fetch from "node-fetch";
 
 const app = express()
 const port = 80;
@@ -15,7 +16,8 @@ const config = {
     token: 'ayognice',
     encodingAESKey: 'mjePwq5shh0YmFNpI9R0ojMkP5NHsunH1clt0VGHXvX'
 }
-
+const openAIurl = "https://api.openai.com/v1/chat/completions"; //openAi 地址
+const API_KEY = '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'; // 替换为您的 OpenAI API 密钥
 
 // 实例化一个 WechatApi 对象
 const api = new WechatApi(config.appid, config.secret);
@@ -46,8 +48,21 @@ const api = new WechatApi(config.appid, config.secret);
 // app.use(function(req, res, next) {
 //     res.setHeader('Access-Control-Allow-Origin', '*');
 // });
+//
+const jsonObj = {
+    person: {
+        name: 'John',
+        age: 30,
+        address: {
+            city: 'New York',
+            state: 'NY',
+        },
+    },
+};
 
-
+const builder = new xml2js.Builder({rootName: 'root'});
+const xml = builder.buildObject(jsonObj);
+console.log('xml', xml)
 // 配置路由，用于接收 POST 请求，进行消息的处理和回复
 app.post('/', function (req, res) {
     console.log('post访问')
@@ -59,26 +74,41 @@ app.post('/', function (req, res) {
         data += chunk;
     });
     req.on('end', function () {
-        xml2js.parseString(data, {explicitArray: false}, function (err, json) {
+        xml2js.parseString(data, {explicitArray: false}, async function (err, json) {
             const fromUsername = json.xml.FromUserName;
             const toUsername = json.xml.ToUserName;
             const content = json.xml.Content;
             const replyContent = '您好！欢迎关注我的公众号！';
-            const replyMessage = {
-                xml: {
-                    ToUserName: fromUsername,
-                    FromUserName: toUsername,
-                    CreateTime: new Date().getTime(),
-                    MsgType: 'text',
-                    Content: content,
-                },
-            };
-            const builder = new xml2js.Builder({cdata: true});
-            // 将消息转换为 XML 格式
-            const xml = builder.buildObject(replyMessage);
-            // 设置响应头 Content-Type 为 text/xml
-            res.set('Content-Type', 'text/xml');
-            res.send(xml);
+            try {
+                const response = await fetch(openAIurl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${API_KEY}`,
+                    },
+                    body: JSON.stringify(req.body),
+                });
+                // 解析响应数据为 JSON 格式
+                const responseData = await response.json();
+                const replyMessage = {
+                    xml: {
+                        ToUserName: fromUsername,
+                        FromUserName: toUsername,
+                        CreateTime: new Date().getTime(),
+                        MsgType: 'text',
+                        Content: responseData.choices[0].message.content,
+                    },
+                };
+                const builder = new xml2js.Builder({cdata: true});
+                // 将消息转换为 XML 格式
+                const xml = builder.buildObject(replyMessage);
+                // 设置响应头 Content-Type 为 text/xml
+                res.set('Content-Type', 'text/xml');
+                res.send(xml);
+            } catch (e) {
+                console.log('错误',e)
+            }
+
         });
     });
 });
