@@ -6,7 +6,7 @@ import crypto from 'crypto';
 import fetch from "node-fetch";
 
 const app = express()
-const port = 80;
+const port = 3000;
 
 // 在公众平台中获取的基本配置信息
 
