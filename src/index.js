@@ -12,7 +12,7 @@ const openAIurl = "https://api.openai.com/v1/chat/completions"; //openAi 地址
 const diyServeUrl = "/api/openai/gpt3"; //服务器地址
 const agent = new HttpsProxyAgent(proxy); // 创建代理，本地请求测试需要进行科学上网必须开启（前提条件），
 // 部署线上需要用到 "外面的服务器" (这里不做过多解释 懂得都懂)
-
+//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
 const app = express();
 app.use(cors())//跨域需求 为了方便本地请求，如果部署线上 需要禁止他（地址不泄漏情况☺️可以不管）
 app.use(bodyParser.json());
