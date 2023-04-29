@@ -48,7 +48,7 @@ const api = new WechatApi(config.appid, config.secret);
 app.post('/', function (req, res) {
     console.log('post访问')
 
-    const data = '';
+    let data = '';
 
     req.setEncoding('utf8');
     req.on('data', function (chunk) {
