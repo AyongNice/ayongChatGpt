@@ -5,17 +5,20 @@
     "startwei": "node ./src/weicaht.js",
     "starth5": "node ./src/open-ai.html"
   },
-
   "dependencies": {
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "fetch": "^1.1.0",
     "https-proxy-agent": "^5.0.1",
+    "JSONStream": "^1.3.5",
     "node-fetch": "^3.3.1",
     "openai": "^3.2.1",
+    "openai-api": "^1.3.1",
+    "openai-streams": "^5.1.1",
     "request": "^2.88.2",
     "wechat-api": "^1.35.1",
+    "ws": "^8.13.0",
     "xml2js": "^0.5.0"
   }
 }
