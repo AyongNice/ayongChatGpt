@@ -20,8 +20,8 @@ const wsServer = new WebSocketServer({
 // 在公众平台中获取的基本配置信息
 
 const config = {
-    appId: 'wx3046267608ef4a14',
-    appSecret: 'cf56b8c0ce7a08497739bdc8bbe31326',
+    appId: 'wx5b9170dca306e76b',
+    appSecret: '24a6a548db9ef3c480e1f142ab28a70f',
     token: 'ayognice',
     encodingAESKey: 'mjePwq5shh0YmFNpI9R0ojMkP5NHsunH1clt0VGHXvX'
 }
