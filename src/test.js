@@ -56,10 +56,6 @@ app.get('/', function (req, res) {
     }
 });
 
-
-
-const builder = new xml2js.Builder({rootName: 'root'});
-
 const options = {
     hostname: 'api.openai.com',
     path: '/v1/chat/completions',
@@ -73,7 +69,10 @@ const options = {
 // 微信公众号接口处理
 
 /** wsServer 服务开启 **/
+console.log('-----wsServer 服务开启-----')
 wsServer.on('connection', function (ws) {
+
+    console.log('----------',ws)
     ws.on('message', async function (message) {
         /** 二进制数据转换 string **/
         const messageData = Buffer.from(message).toString();
