@@ -84,7 +84,7 @@ app.post('/', function (req, res) {
 
            if(gptRes) {
                console.log('gptRes???-----count',count)
-               send()
+               send(gptRes)
            } else {
                console.log('gptRes!!!!----count',count)
                count >= 3 ? send('响应长度超出微信限制\n请暂时提问些简单回复的问题\n;客户聊天机制升级优化中;\n尽情期待公众号通知'):'';
