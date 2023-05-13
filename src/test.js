@@ -81,7 +81,7 @@ app.post('/', function (req, res) {
         clearInterval(time)
         time = setInterval(() => {
             count++;
-            gptRes ? send() : count >= 3 && send('响应长度超出微信限制;请暂时提问些简单回复的问题;客户聊天机制升级优化中尽情期待公众号通知')
+            gptRes ? send() : count >= 3 ? send('响应长度超出微信限制;请暂时提问些简单回复的问题;客户聊天机制升级优化中尽情期待公众号通知'):'';
         }, 800)
 
 
@@ -185,9 +185,10 @@ function requestGPT({
                         stream = false, content, callback = () => {
     }
                     }) {
-    let chunks = '';
+    const chunks = [];
     /** GPT API转发 **/
     const request = https.request(options, (res) => {
+        // 进行处理
         res.on('data', (chunk) => {
             console.log('res.on----data----chunk', chunk)
             if (stream) {
@@ -197,24 +198,25 @@ function requestGPT({
                     callback({streams: JSON.parse(streams).choices[0].message.content})
                 }
             } else {
-                chunks += chunk;
+                chunks.push(chunk);
             }
 
+        });
+        res.on('end', () => {
+            console.log(' request.on--end--chunks', chunks)
+            if (!stream) { //非流式处理全部结果
+                const data = Buffer.concat(chunks);
+                const result = JSON.parse(data.toString().trim());
+                console.log('result', result)
+                callback({streams: result.choices[0].message.content})
+            }
         });
     });
 
     request.on('error', (e) => {
         console.error(e);
     });
-    request.on('end', () => {
-        console.log(' request.on--end--chunks', chunks)
-        if (!stream) { //非流式处理全部结果
-            const result = JSON.parse(chunks);
-            console.log('result', result)
-            callback({streams: result.choices[0].message.content})
-        }
-        // 进行处理
-    });
+
     const postData = JSON.stringify({
         "stream": stream, "model": "gpt-3.5-turbo", "messages": [{
             "role": "user", "content": content
