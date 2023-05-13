@@ -64,7 +64,6 @@ app.post('/', function (req, res) {
         data += chunk;
     });
     req.on('end', async function () {
-        console.log('app----post---data', data)
         const {content, fromUsername, toUsername} = await weChatResponse({
             data, streams: '你好'
         })
@@ -166,7 +165,6 @@ async function sendTextMessage(toUser, content) {
         request.post({url, json: body}, (err, response, body) => {
             if (err) {
                 console.error('Error sending message:', err);
-
                 reject(err)
             } else {
                 console.log('Message sent:', body);
@@ -208,9 +206,11 @@ function requestGPT({
         console.error(e);
     });
     request.on('end', () => {
+        console.log(' request.on--end--chunks',chunks)
         if (!stream) { //非流式处理全部结果
             const data = Buffer.concat(chunks);
             const result = JSON.parse(data.trim());
+            console.log('result',result)
             callback({streams: result.choices[0].message.content})
         }
         // 进行处理
