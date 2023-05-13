@@ -81,11 +81,17 @@ app.post('/', function (req, res) {
         clearInterval(time)
         time = setInterval(() => {
             count++;
-            gptRes ? send() : count >= 3 ? send('响应长度超出微信限制;请暂时提问些简单回复的问题;客户聊天机制升级优化中尽情期待公众号通知'):'';
+           if(gptRes) {
+               console.log('gptRes???-----count',count)
+               send()
+           } else {
+               console.log('gptRes!!!!----count',count)
+               count >= 3 ? send('响应长度超出微信限制\n请暂时提问些简单回复的问题\n;客户聊天机制升级优化中;\n尽情期待公众号通知'):'';
+           }
         }, 800)
 
 
-        function send() {
+        function send(gptRes) {
             const xml = assembleXML({fromUsername, toUsername, gptRes})
             // 设置响应头 Content-Type 为 text/xml
             res.set('Content-Type', 'text/xml');
@@ -190,7 +196,6 @@ function requestGPT({
     const request = https.request(options, (res) => {
         // 进行处理
         res.on('data', (chunk) => {
-            console.log('res.on----data----chunk', chunk)
             if (stream) {
                 const datachunk = Buffer.from(chunk).toString().replace("data:", "");
                 const streams = datachunk.trim()
@@ -203,7 +208,6 @@ function requestGPT({
 
         });
         res.on('end', () => {
-            console.log(' request.on--end--chunks', chunks)
             if (!stream) { //非流式处理全部结果
                 const data = Buffer.concat(chunks);
                 const result = JSON.parse(data.toString().trim());
