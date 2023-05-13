@@ -83,7 +83,9 @@ app.post('/', function (req, res) {
             count++;
            if(gptRes) {
 
+
                console.log('gptRes???-----count',count)
+
                send(gptRes)
            } else {
                console.log('gptRes!!!!----count',count)
