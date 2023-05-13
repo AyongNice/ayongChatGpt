@@ -65,7 +65,7 @@ app.post('/', function (req, res) {
     });
     req.on('end', async function () {
         console.log('app----post---data', data)
-        const {content,fromUsername, toUsername} = await weChatResponse({
+        const {content, fromUsername, toUsername} = await weChatResponse({
             data, streams: '你好'
         })
 
@@ -179,26 +179,41 @@ async function sendTextMessage(toUser, content) {
 
 /**
  *  请求GPT api
- * @param stream {string} 请求内容
+ * @param stream {boolean} 请求模式 true 流式 默认false 非流式
+ * @param content
  * @param callback {Function:string}
  */
 function requestGPT({
                         stream = false, content, callback = () => {
     }
                     }) {
+    if (!stream) const chunks = [];
     /** GPT API转发 **/
     const request = https.request(options, (res) => {
         res.on('data', (chunk) => {
-            const datachunk = Buffer.from(chunk).toString().replace("data:", "");
-            const streams = datachunk.trim()
-            if (streams !== '[DONE]') {
-                callback({streams: JSON.parse(streams).choices[0].message.content})
+            if (stream) {
+                const datachunk = Buffer.from(chunk).toString().replace("data:", "");
+                const streams = datachunk.trim()
+                if (streams !== '[DONE]') {
+                    callback({streams: JSON.parse(streams).choices[0].message.content})
+                }
+            } else {
+                chunks.push(chunk);
             }
+
         });
     });
 
     request.on('error', (e) => {
         console.error(e);
+    });
+    res.on('end', () => {
+        if (!stream) { //非流式处理全部结果
+            const data = Buffer.concat(chunks);
+            const result = JSON.parse(data);
+            callback({streams: result.choices[0].message.content})
+        }
+        // 进行处理
     });
     const postData = JSON.stringify({
         "stream": stream, "model": "gpt-3.5-turbo", "messages": [{
