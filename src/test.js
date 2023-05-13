@@ -9,7 +9,7 @@ import cors from 'cors';
 import HttpsProxyAgent from "https-proxy-agent";
 
 const app = express()
-const port = 80;
+const port = 3000;
 app.use(cors())//跨域需求 为了方便本地请求，如果部署线上 需要禁止他（地址不泄漏情况☺️可以不管）
 
 
