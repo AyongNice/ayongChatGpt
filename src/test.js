@@ -91,15 +91,15 @@ app.post('/', function (req, res) {
                console.log('gptRes!!!!----count',count)
                count >= 6 ? send('响应长度超出微信限制;\n请暂时提问些简单回复的问题;\n客户聊天机制升级优化中;\n尽请期待公众号通知'):'';
            }
-        }, 800)
+        }, 700)
 
 
         function send(gptRes) {
+            clearInterval(time)
             const xml = assembleXML({fromUsername, toUsername, gptRes})
             // 设置响应头 Content-Type 为 text/xml
             res.set('Content-Type', 'text/xml');
             res.send(xml);
-            clearInterval(time)
         }
 
         // sendTextMessage(toUsername,'阿勇学前端')
