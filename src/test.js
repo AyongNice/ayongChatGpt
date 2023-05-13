@@ -189,6 +189,7 @@ function requestGPT({
     /** GPT API转发 **/
     const request = https.request(options, (res) => {
         res.on('data', (chunk) => {
+            console.log('res.on----data----chunk',chunk)
             if (stream) {
                 const datachunk = Buffer.from(chunk).toString().replace("data:", "");
                 const streams = datachunk.trim()
