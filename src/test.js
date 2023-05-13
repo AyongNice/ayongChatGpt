@@ -82,6 +82,7 @@ app.post('/', function (req, res) {
         time = setInterval(() => {
             count++;
            if(gptRes) {
+
                console.log('gptRes???-----count',count)
                send(gptRes)
            } else {
