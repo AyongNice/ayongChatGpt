@@ -187,7 +187,7 @@ function requestGPT({
                         stream = false, content, callback = () => {
     }
                     }) {
-    if (!stream) const chunks = [];
+    const chunks = [];
     /** GPT API转发 **/
     const request = https.request(options, (res) => {
         res.on('data', (chunk) => {
