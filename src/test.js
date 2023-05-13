@@ -52,7 +52,8 @@ app.get('/', function (req, res) {
 const options = {
     hostname: 'api.openai.com', path: '/v1/chat/completions', method: 'POST', headers: {
         'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}`,
-    }, agent: agent
+    },
+    // agent: agent
 
 };
 // 微信公众号接口处理
@@ -64,29 +65,72 @@ app.post('/', function (req, res) {
     });
     req.on('end', async function () {
         console.log('app----post---data', data)
-        const {xml, content,toUsername} = await weChatResponse({
+        const {content,fromUsername, toUsername} = await weChatResponse({
             data, streams: '你好'
         })
+
+        let gptRes = '';
+        let count = 0;
+        let time = null;
         console.log('weChatResponse----callback---content', content)
-        // 设置响应头 Content-Type 为 text/xml
-        res.set('Content-Type', 'text/xml');
-        res.send(xml);
-        sendTextMessage(toUsername,'阿勇学前端')
+        requestGPT({
+            content,
+            callback: ({streams}) => {
+                gptRes = streams
+            }
+        })
+        clearInterval(time)
+        time = setInterval(() => {
+            count++;
+            gptRes ? send() : count >= 3 && send('响应长度超出微信限制;请暂时提问些简单回复的问题;客户聊天机制升级优化中尽情期待公众号通知')
+        }, 800)
+
+
+        function send() {
+            const xml = assembleXML({fromUsername, toUsername, gptRes})
+            // 设置响应头 Content-Type 为 text/xml
+            res.set('Content-Type', 'text/xml');
+            res.send(xml);
+            clearInterval(time)
+        }
+
+        // sendTextMessage(toUsername,'阿勇学前端')
     })
 
 })
 
+/**
+ * XML 转换
+ * @param fromUsername 用户名
+ * @param toUsername 用户ID
+ * @param gptRes  gpt 答案
+ * @returns {*}
+ */
+function assembleXML({fromUsername, toUsername, gptRes}) {
+    console.log('assembleXML', fromUsername, toUsername, gptRes)
+    const replyMessage = {
+        xml: {
+            ToUserName: fromUsername,
+            FromUserName: toUsername,
+            CreateTime: new Date().getTime(),
+            MsgType: 'text',
+            Content: gptRes,
+        },
+    };
 
+    const builder = new xml2js.Builder({cdata: true});
+    // 将消息转换为 XML 格式
+    return builder.buildObject(replyMessage);
+}
 
 /**
  * 接收公众号用户端信息
  * @param data {XML} 用户端信息
- * @param streams {string} 回复用户端信息
  * @param callback {Function} 完成回调
  * @returns {Promise<unknown>}
  */
 function weChatResponse({
-                            data, streams, callback = () => {
+                            data, callback = () => {
     }
                         }) {
     return new Promise((resolve, reject) => {
@@ -94,25 +138,9 @@ function weChatResponse({
             const fromUsername = json.xml.FromUserName;
             const toUsername = json.xml.ToUserName;
             const content = json.xml.Content;
-            const data = {
-                "model": "gpt-3.5-turbo", "messages": [{
-                    "role": "user", "content": content
-                }], "temperature": 0.7 //此数据 代表这 模型答案匹配精确度  数字越高精度越高
-            };
-            const replyMessage = {
-                xml: {
-                    ToUserName: fromUsername,
-                    FromUserName: toUsername,
-                    CreateTime: new Date().getTime(),
-                    MsgType: 'text',
-                    Content: streams,
-                },
-            };
-            const builder = new xml2js.Builder({cdata: true});
-            // 将消息转换为 XML 格式
-            const xml = builder.buildObject(replyMessage);
-            callback({xml, content, toUsername})
-            resolve({xml, content, toUsername})
+
+            callback({content, toUsername})
+            resolve({content, fromUsername, toUsername})
         });
     })
 
@@ -128,7 +156,7 @@ async function sendTextMessage(toUser, content) {
     return new Promise(async (resolve, reject) => {
         const accessToken = await getAccessToken(); //获取token
 
-        console.log('accessToken',accessToken)
+        console.log('accessToken', accessToken)
         const url = `https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=${accessToken}`;
         const body = {
             touser: toUser, msgtype: 'text', text: {
@@ -148,13 +176,14 @@ async function sendTextMessage(toUser, content) {
     })
 
 }
+
 /**
  *  请求GPT api
  * @param stream {string} 请求内容
  * @param callback {Function:string}
  */
 function requestGPT({
-                        stream = false, callback = () => {
+                        stream = false, content, callback = () => {
     }
                     }) {
     /** GPT API转发 **/
@@ -173,7 +202,7 @@ function requestGPT({
     });
     const postData = JSON.stringify({
         "stream": stream, "model": "gpt-3.5-turbo", "messages": [{
-            "role": "user", "content": '你好'
+            "role": "user", "content": content
         }], "temperature": 0.7 //此数据 代表这 模型答案匹配精确度  数字越高精度越高
     });
     request.write(postData);
