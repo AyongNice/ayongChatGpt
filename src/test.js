@@ -64,16 +64,18 @@ app.post('/', function (req, res) {
     });
     req.on('end', async function () {
         console.log('app----post---data', data)
-        const {xml, content} = await weChatResponse({
+        const {xml, content,toUsername} = await weChatResponse({
             data, streams: '你好'
         })
         console.log('weChatResponse----callback---content', content)
         // 设置响应头 Content-Type 为 text/xml
         res.set('Content-Type', 'text/xml');
         res.send(xml);
+        sendTextMessage(toUsername,'阿勇学前端')
     })
 
 })
+
 
 
 /**
@@ -135,11 +137,12 @@ async function sendTextMessage(toUser, content) {
         };
         request.post({url, json: body}, (err, response, body) => {
             if (err) {
-                reject(err)
                 console.error('Error sending message:', err);
+
+                reject(err)
             } else {
-                resolve(body)
                 console.log('Message sent:', body);
+                resolve(body)
             }
         });
     })
