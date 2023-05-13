@@ -207,10 +207,10 @@ function requestGPT({
     request.on('error', (e) => {
         console.error(e);
     });
-    res.on('end', () => {
+    request.on('end', () => {
         if (!stream) { //非流式处理全部结果
             const data = Buffer.concat(chunks);
-            const result = JSON.parse(data);
+            const result = JSON.parse(data.trim());
             callback({streams: result.choices[0].message.content})
         }
         // 进行处理
