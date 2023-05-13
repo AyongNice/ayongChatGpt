@@ -185,11 +185,11 @@ function requestGPT({
                         stream = false, content, callback = () => {
     }
                     }) {
-    const chunks = [];
+    let chunks = '';
     /** GPT API转发 **/
     const request = https.request(options, (res) => {
         res.on('data', (chunk) => {
-            console.log('res.on----data----chunk',chunk)
+            console.log('res.on----data----chunk', chunk)
             if (stream) {
                 const datachunk = Buffer.from(chunk).toString().replace("data:", "");
                 const streams = datachunk.trim()
@@ -197,7 +197,7 @@ function requestGPT({
                     callback({streams: JSON.parse(streams).choices[0].message.content})
                 }
             } else {
-                chunks.push(chunk);
+                chunks += chunk;
             }
 
         });
@@ -207,11 +207,10 @@ function requestGPT({
         console.error(e);
     });
     request.on('end', () => {
-        console.log(' request.on--end--chunks',chunks)
+        console.log(' request.on--end--chunks', chunks)
         if (!stream) { //非流式处理全部结果
-            const data = Buffer.concat(chunks);
-            const result = JSON.parse(data.trim());
-            console.log('result',result)
+            const result = JSON.parse(chunks);
+            console.log('result', result)
             callback({streams: result.choices[0].message.content})
         }
         // 进行处理
