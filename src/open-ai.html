@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <style>
-        button{
+        button {
             width: 200px;
             height: 50px;
         }
@@ -17,7 +17,7 @@
 <button onClick="request()">点击请求</button>
 
 <script>
-    const url = "http://13.50.106.186:3000/api/openai/gpt3";
+    const url = "http://localhost:3000/api/openai/gpt3";
     const headers = {
         "Content-Type": "application/json",
     };
@@ -47,6 +47,40 @@
                 console.error(error);  // 处理错误情况
             });
     }
+
+
+    // // 创建 WebSocket 客户端
+    // const ws = new WebSocket('ws://localhost:8080');
+    //
+    // // 监听 WebSocket 连接建立事件
+    // ws.on('open', () => {
+    //     console.log('WebSocket connection established.');
+    //
+    //     // 发送请求数据
+    //     const requestData = {id: '123', data: 'hello'};
+    //     ws.send(JSON.stringify(requestData));
+    // });
+    //
+    // // 监听 WebSocket 数据接收事件
+    // ws.on('message', (data) => {
+    //     console.log('Received data:', data);
+    //
+    //     // 解析并处理接收到的数据
+    //     const responseData = JSON.parse(data);
+    //
+    //     // 关闭 WebSocket 连接
+    //     ws.close();
+    // });
+    //
+    // // 监听 WebSocket 连接关闭事件
+    // ws.on('close', () => {
+    //     console.log('WebSocket connection closed.');
+    // });
+    //
+    // // 监听 WebSocket 连接错误事件
+    // ws.on('error', (err) => {
+    //     console.error('WebSocket connection error:', err);
+    // });
 
 </script>
 

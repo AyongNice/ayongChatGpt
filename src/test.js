@@ -65,7 +65,7 @@ app.post('/', function (req, res) {
     });
     req.on('end', async function () {
         const {content, fromUsername, toUsername} = await weChatResponse({
-            data, streams: '你好'
+            data
         })
 
         let gptRes = '';
@@ -81,19 +81,17 @@ app.post('/', function (req, res) {
         clearInterval(time)
         time = setInterval(() => {
             count++;
-           if(gptRes) {
-
-
-               console.log('gptRes???-----count',count)
-
-               send(gptRes)
-           } else {
-               console.log('gptRes!!!!----count',count)
-               count >= 6 ? send('答案长度超出微信限制;\n请暂时提问些简单回复的问题;\n机器人聊天机制升级优化中;\n尽请期待5/20日公众号通知'):'';
-           }
+            if (gptRes) {
+                send(gptRes)
+            } else {
+                count >= 6 ? send('答案长度超出微信限制;\n请暂时提问些简单回复的问题;\n机器人聊天机制升级优化中;\n尽请期待5/20日公众号通知') : '';
+            }
         }, 700)
 
-
+        /**
+         *  接口回复信息
+         * @param gptRes {string} gpt结果
+         */
         function send(gptRes) {
             clearInterval(time)
             const xml = assembleXML({fromUsername, toUsername, gptRes})
@@ -109,10 +107,10 @@ app.post('/', function (req, res) {
 
 /**
  * XML 转换
- * @param fromUsername 用户名
- * @param toUsername 用户ID
- * @param gptRes  gpt 答案
- * @returns {*}
+ * @param fromUsername {string} 用户名
+ * @param toUsername {string}  用户ID
+ * @param gptRes  {string}  gpt 答案
+ * @returns {XMLDocument}
  */
 function assembleXML({fromUsername, toUsername, gptRes}) {
     console.log('assembleXML', fromUsername, toUsername, gptRes)
@@ -135,7 +133,7 @@ function assembleXML({fromUsername, toUsername, gptRes}) {
  * 接收公众号用户端信息
  * @param data {XML} 用户端信息
  * @param callback {Function} 完成回调
- * @returns {Promise<unknown>}
+ * @returns {Promise<{content:string;fromUsername:string;toUsername:string}>}
  */
 function weChatResponse({
                             data, callback = () => {
@@ -160,29 +158,38 @@ function weChatResponse({
  * @param content {string} 回复信息
  * @returns {Promise<unknown>}
  */
-async function sendTextMessage(toUser, content) {
+function sendTextMessage(toUser, content) {
     return new Promise(async (resolve, reject) => {
-        const accessToken = await getAccessToken(); //获取token
 
-        console.log('accessToken', accessToken)
-        const url = `https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=${accessToken}`;
-        const body = {
-            touser: toUser, msgtype: 'text', text: {
-                content: content,
-            },
-        };
-        request.post({url, json: body}, (err, response, body) => {
-            if (err) {
-                console.error('Error sending message:', err);
-                reject(err)
-            } else {
-                console.log('Message sent:', body);
-                resolve(body)
-            }
-        });
+        try {
+            const accessToken = await getAccessToken(); //获取token
+            console.log('accessToken', accessToken)
+            const url = `https://api.weixin.qq.com/cgi-bin/message/custom/send?access_token=${accessToken}`;
+            const body = {
+                touser: toUser, msgtype: 'text', text: {
+                    content: content,
+                },
+            };
+            request.post({url, json: body}, (err, response, body) => {
+                if (err) {
+                    console.error('Error sending message:', err);
+                    reject(err)
+                } else {
+                    console.log('Message sent:', body);
+                    resolve(body)
+                }
+            });
+        } catch (e) {
+            console.log('accessToken', e)
+
+        }
+
+
     })
 
 }
+
+sendTextMessage().then()
 
 /**
  *  请求GPT api
@@ -236,7 +243,7 @@ function requestGPT({
 
 /**
  * 获取token
- * @returns {Promise<unknown>}
+ * @returns {Promise<string>}
  */
 function getAccessToken() {
     return new Promise((resolve, reject) => {
@@ -246,7 +253,6 @@ function getAccessToken() {
                 reject(error);
             } else {
                 const result = JSON.parse(body);
-                console.log('getAccessToken', result)
                 if (result.access_token) {
                     resolve(result.access_token);
                 } else {
@@ -256,6 +262,7 @@ function getAccessToken() {
         });
     });
 };
+
 // 启动 HTTP 服务和 WebSocket 服务器
 app.listen(port, () => {
     console.log('Server started on port .' + port);

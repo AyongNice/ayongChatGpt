@@ -4,6 +4,8 @@ import xml2js from 'xml2js';
 import WechatApi from 'wechat-api';
 import crypto from 'crypto';
 import fetch from "node-fetch";
+import https from "https";
+import {WebSocketServer} from 'ws';
 
 const app = express()
 const port = 3000;
@@ -68,6 +70,7 @@ const builder = new xml2js.Builder({rootName: 'root'});
 const xml = builder.buildObject(jsonObj);
 console.log('xml', xml)
 // 配置路由，用于接收 POST 请求，进行消息的处理和回复
+// 微信公众号post接口处理
 app.post('/', function (req, res) {
     console.log('post访问')
     let data = '';
@@ -80,7 +83,6 @@ app.post('/', function (req, res) {
             const fromUsername = json.xml.FromUserName;
             const toUsername = json.xml.ToUserName;
             const content = json.xml.Content;
-            const replyContent = '您好！欢迎关注我的公众号！';
             const data = {
                 "model": "gpt-3.5-turbo",
                 "messages": [{
@@ -127,4 +129,8 @@ app.post('/', function (req, res) {
 app.listen(port, function () {
     console.log('Wechat app listening on port 80!');
 });
+
+
+
+
 
