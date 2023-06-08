@@ -9,10 +9,10 @@ console.log("token", token)
 router.use(cookieParser());
 router.post('/', (req, res) => {
     const {username, password} = req.body;
-    const myCookie = req.cookies.token;
-    const isToken= token.isTokenExpired(myCookie)
-    console.log('myCookie',myCookie)
-    console.log('isToken',isToken)
+    const tokenstr = req.cookies.token;
+    // const isToken= token.isTokenExpired(myCookie)
+    console.log('login---token',tokenstr)
+    // console.log('isToken',isToken)
 
     console.log(username,password)
 
@@ -26,7 +26,7 @@ router.post('/', (req, res) => {
 
         mysqlDB.login({
         username, password, succeed: () => {
-            const getToken = token.generateToken(username)
+            const getToken = token.generateToken(username,tokenstr)
             res.status(200).json({message: 'Login successful', token: getToken});
         }, fail: (err) => {
             console.log('results',err)

@@ -1,4 +1,5 @@
 import express from 'express'
+import expressWs from 'express-ws';
 import cors from "cors";
 import bodyParser from "body-parser";
 import mysqlDB from "../my-sql-db/index.js";
@@ -6,19 +7,27 @@ import mysqlDB from "../my-sql-db/index.js";
 import loginRouter from '../login/index.js'
 import registerRouter from '../register/index.js'
 import router from "../login/index.js";
+import rollout from "../rollout/rollout.js";
+
 // import {router} from '../sma-verify/index.js'
 import http from 'http' ;
-import socketIO from '../testt.cjs' ;
+
 
 import HttpsProxyAgent from 'https-proxy-agent';
 import https from 'https';
+
 const API_KEY = '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'; // 替换为您的 OpenAI API 密钥
-
-console.log('socketIO',socketIO)
 const app = express();
+expressWs(app);
 const server = http.createServer(app);
-const io = socketIO(server);
+// const io = socketIO(server);
+import {WebSocketServer} from 'ws';
+import token from "../token/index.js";
 
+const tokenInstance = token.getInterest()
+const wsServer = new WebSocketServer({
+    port: 8080
+});
 
 app.use(cors())//跨域需求 为了方便本地请求，如果部署线上 需要禁止他（地址不泄漏情况☺️可以不管）
 app.use(bodyParser.json());
@@ -28,12 +37,10 @@ app.use(express.json());
 // 挂载接口路由
 app.use('/login', loginRouter);
 app.use('/register', registerRouter);
-
-
+app.use('/rollout', rollout);
 
 const proxy = 'http://127.0.0.1:7890'; // 代理地址
 const agent = new HttpsProxyAgent(proxy);
-
 
 const options = {
     hostname: 'api.openai.com',
@@ -46,44 +53,73 @@ const options = {
     agent: agent
 };
 
-io.on('connection', function (ws) {
+app.ws('/websocket', function (ws) {
     ws.on('message', async function (message) {
+
         /** 二进制数据转换 string **/
         const messageData = Buffer.from(message).toString();
-        // ws.send(1);
-        const req = https.request(options, (res) => {
-            res.on('data', (chunk) => {
-                const datachunk = Buffer.from(chunk).toString().replace("data:", "");
-                const streams = datachunk.trim()
-                if(streams !== '[DONE]'){
-                    // JSON.parse(streams).choices[0].delta.content
-                    try {
-                        console.log('datachunk---',JSON.parse(streams).choices[0].message.content );
-                    }catch (e) {
+        /** 前端参数 string **/
+        const userMessageData = JSON.parse(messageData)
+        try {
+            const token = userMessageData.token
+            // const isTokenExpired = tokenInstance.isTokenExpired(token)
+            // if (isTokenExpired === 2) {
+            //     //刷新token
+            //     const newToken = tokenInstance.refreshUserToken(token)
+            //     const message = {
+            //         type: "token",
+            //         newToken
+            //     };
+            //     //返回刷新token
+            //     // ws.send(JSON.stringify(message));
+            //     ws.send(JSON.stringify(message));
+            // }
+            // ws.clone()
+            // if (!isTokenExpired) return
+        } catch (e) {
+            console.log(e)
+        }
 
-                    }
-                }
-                ws.send(datachunk);
-            });
-        });
 
-        req.on('error', (e) => {
-            console.error(e);
-        });
+        // websoket 首次验证拦截 gpt转发
+        if (JSON.parse(messageData).validation) return
         const postData = JSON.stringify({
             "stream": true,
             "model": "gpt-3.5-turbo",
             "messages": [{
-                "role": "user", "content": messageData
+                "role": "user", "content": userMessageData.data
             }], "temperature": 0.7 //此数据 代表这 模型答案匹配精确度  数字越高精度越高
         });
-        req.write(postData);
-        req.end();
+        // const req = https.request(options, (res) => {
+        //     res.on('data', (chunk) => {
+        //         const datachunk = Buffer.from(chunk).toString().replace("data:", "");
+        //         const streams = datachunk.trim()
+        //         if (streams !== '[DONE]') {
+        //             // JSON.parse(streams).choices[0].delta.content
+        //             try {
+        //                 console.log('datachunk---', JSON.parse(streams).choices[0].message.content);
+        //             } catch (e) {
+        //
+        //             }
+        //         }
+        //         // const newToken = tokenInstance.refreshUserToken(token)
+        //         console.log('datachunk', datachunk)
+        //         ws.send(datachunk);
+        //     });
+        // });
+        //
+        // req.on('error', (e) => {
+        //     console.error(e);
+        // });
+        //
+        // req.write(postData);
+        // req.end();
+
 
     });
 });
 
 // 启动服务
-app.listen(8080, () => {
+app.listen(8081, () => {
     console.log('Server started on port 8080');
 });
