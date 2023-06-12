@@ -1,7 +1,7 @@
 class Token {
     tokenMap = {}; //token内存对象
     time = new Date() //时间对象
-    tokenShelfLife = 1 //token过期时间 1小时
+    tokenShelfLife = 2 //token过期时间 1小时
     static token; //单例
 
     static getInterest() {
@@ -15,35 +15,37 @@ class Token {
      *  获取token
      * @param userId  用户ID
      * @param oldToken 旧token
+     * @param isFirst 是否首次获取
      * @returns {string}
      */
-    generateToken(userId,oldToken) {
-        console.log('oldToken---',oldToken)
+    generateToken(userId, oldToken, isFirst) {
         // 生成随机的 token 字符串
         const token = this.generateRandomToken();
 
-        console.log('generateToken----验证',this.tokenMap[oldToken])
+        console.log('generateToken----验证', this.tokenMap[userId])
 
         /** 存在之前删除token **/
-        if (this.tokenMap[oldToken]) {
-            delete this.tokenMap[oldToken]
-            console.log('存在之前删除token',this.tokenMap)
+        if (this.tokenMap[userId]) {
+            // /** 登陆获取token，存在删除 **/
+            // if (isFirst) return '0'
+            delete this.tokenMap[userId]
+            console.log('存在之前删除token', this.tokenMap)
 
         }
         // 将 token 与用户ID关联，保存到内存中
-        this.tokenMap[token] = {
+        this.tokenMap[userId] = {
             userId: userId, token: token, expiry: this.calculateExpiry(this.time.getTime()), // 计算 token 的过期时间
         }
-        console.log('generateToken',this.tokenMap)
+        console.log('generateToken', this.tokenMap)
 
         return token;
     }
 
 
-    refreshUserToken(token) {// 刷新用户的 token
+    refreshUserToken(userId) {// 刷新用户的 token
         // 检查 token 是否存在于内存中
-        if (this.tokenMap.hasOwnProperty(token)) {
-            return this.generateToken(this.tokenMap[token].userId,token)
+        if (this.tokenMap.hasOwnProperty(userId)) {
+            return this.generateToken(this.tokenMap[userId].userId, token)
         }
     }
 
@@ -56,9 +58,9 @@ class Token {
      */
     isTokenExpired(token, userId) {
         console.log('isTokenExpired', this.tokenMap)
-        if (!this.tokenMap.hasOwnProperty(token)) return 0; // 如果 token 不存在，则视为过期
-        if (userId && this.tokenMap[token].userId !== userId) return 0;// 如果 token !== userId，则视为过期
-        const expiry = this.tokenMap[token].expiry;//过期时间
+        if (!this.tokenMap.hasOwnProperty(userId)) return 0; // 如果 token 不存在，则视为过期
+        if (userId && this.tokenMap[userId].token !== token) return 3;// 如果 token !== userId，则视为过期
+        const expiry = this.tokenMap[userId].expiry;//过期时间
         const currentTime = this.time.getTime();//当前时间
         const shelfLifeRemaining = 3600000 //token保质期剩余1个小时
         if (currentTime < expiry) {
@@ -97,11 +99,11 @@ class Token {
      * @returns {boolean}
      */
     deleteToken(token, userId) {
-
+        console.log(token, userId)
         /** 存在之前删除token **/
-        if (token && userId && this.tokenMap[token] && this.tokenMap[token].userId !== userId) {
-            delete this.tokenMap[token]
-            console.log('deleteToken',this.tokenMap)
+        if (token && userId && this.tokenMap[userId] && this.tokenMap[userId].userId === userId) {
+            delete this.tokenMap[userId]
+            console.log('deleteToken', this.tokenMap)
             return true
         } else {
             return false

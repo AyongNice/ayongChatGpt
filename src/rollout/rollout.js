@@ -14,7 +14,7 @@ router.post('/', (req, res) => {
     const deleteTokenRes = token.deleteToken(userId, myCookie)
 
     if (deleteTokenRes) {
-        res.status(200).json({message: 'Login successful',});
+        res.status(200).json({message: 'Login successful'});
 
     } else {
         res.status(500).json({message: '推出失败'});
