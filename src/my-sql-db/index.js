@@ -15,20 +15,21 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
-// 检查表是否存在
-function checkTableExists(callback) {
-    const checkTableQuery = "SHOW TABLES LIKE 'users'";
-    pool.query(checkTableQuery, (error, results) => {
+
+//检查表是否存在
+function checkMembershipTableExists(callback, tableName) {
+    const checkTableQuery = "SHOW TABLES LIKE ?";
+    const values = [tableName];
+    pool.query(checkTableQuery, values, (error, results) => {
         if (error) {
-            console.error('Failed to check table:', error);
-            return callback(error);
+            return console.error('Failed to check membership table:', error);
         }
         const tableExists = results.length > 0;
-        callback(null, tableExists);
+        if (!tableExists) callback(null, tableExists);
     });
 }
 
-// 创建表
+// 创建用户主表
 function createTable(callback) {
     const createTableQuery = `
     CREATE TABLE users (
@@ -39,7 +40,8 @@ function createTable(callback) {
       INDEX idx_phone (phone),
        count INT DEFAULT 50,
         phone VARCHAR(20),
-       balance DECIMAL(10, 2) DEFAULT 0
+       balance DECIMAL(10, 2) DEFAULT 0,
+        INDEX idx_id (id)
     )
   `;
     pool.query(createTableQuery, (error) => {
@@ -52,6 +54,56 @@ function createTable(callback) {
     });
 }
 
+// 3. 创建会员表并关联主表
+const createMembershipTable = (callback = () => {
+}) => {
+    const sqlCreate = `
+    CREATE TABLE membership (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  registration_date DATETIME NOT NULL,
+  expiration_date DATETIME NOT NULL,
+  amount DECIMAL(10, 2) NOT NULL,
+  level INT NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users (id)
+    )
+  `;
+    pool.query(sqlCreate, (error) => {
+        if (error) {
+            console.error('Failed to create table:', error);
+            return callback(error);
+        }
+        console.log('Table created successfully');
+        callback(null);
+    });
+
+};
+// 2. 创建主表的外键约束
+const addForeignKeyConstraint = (callback = () => {
+}) => {
+    const addConstraintQuery = "ALTER TABLE membership ADD CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users(id)";
+
+    pool.query(addConstraintQuery, (error) => {
+        if (error) {
+            console.error('Failed to add foreign key constraint:', error);
+            return callback(error);
+        }
+
+        callback(null);
+    });
+}
+
+/**
+ * 会员表校验/创建+ 创建主表的外键约束
+ */
+function membershipTableOperations() {
+    checkMembershipTableExists((err, tableExists) => {
+        createMembershipTable(() => {
+            addForeignKeyConstraint()
+        })
+    }, 'membership')
+}
+
 // 连接数据库并执行逻辑
 pool.getConnection((error, connection) => {
     if (error) {
@@ -59,7 +111,19 @@ pool.getConnection((error, connection) => {
         return;
     }
     console.log('Connected to database');
-    checkTableExists((error, tableExists) => {
+    const sqlCreate = "SELECT * FROM users;"
+
+    pool.query(sqlCreate, (error,res) => {
+        if (error) {
+            console.error('Failed to create table:', error);
+            return
+        }
+        console.log('Table created successfully',res);
+    });
+    /**
+     *  创建用主户表
+     */
+    checkMembershipTableExists((error, tableExists) => {
         if (error) {
             connection.release();
             return;
@@ -67,12 +131,18 @@ pool.getConnection((error, connection) => {
         if (tableExists) {
             console.log('Table already exists');
             connection.release();
+            // 会员表操作
+            membershipTableOperations()
         } else {
             createTable((error) => {
-                connection.release();
+                if (error) return connection.release();
+                membershipTableOperations()
             });
         }
-    });
+
+    }, 'users');
+
+
 });
 
 // 修改注册用户账号接口的逻辑，将用户信息保存到数据库：
@@ -139,6 +209,13 @@ function smaVerify({phone, succeed = succeeds, fail = fails}) {
         if (err) return fail(err);
         return results.length ? fail('手机号已注册,请更换手机号') : succeed('login')
     });
+}
+
+/**
+ * 会员信息存储
+ */
+function addNewMembers() {
+
 }
 
 setTimeout(() => {
