@@ -1,4 +1,8 @@
 import mysql from 'mysql2';
+import utils from "../utils/utils.js";
+import tokens from "../token/index.js";
+
+const tokenInstance = tokens.getInterest()
 
 const fails = () => {
 }
@@ -54,6 +58,77 @@ function createTable(callback) {
     });
 }
 
+/**
+ * 问题返反馈表
+ * @param callback
+ */
+function createFeedbackTable(callback = () => {
+}) {
+    const createTableQuery = `
+   CREATE TABLE feedback (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    contact VARCHAR(255) NOT NULL,
+    filename VARCHAR(255),
+     registration_date DATETIME NOT NULL)`;
+    pool.query(createTableQuery, (error) => {
+        if (error) {
+            console.log('Failed to create table:', error);
+            return callback(error);
+        }
+        console.log('Table created successfully');
+        callback(null);
+    });
+}
+
+function addFeedback({
+                         username, description, contact, filename, registration_date,
+                         succeed = succeeds, fail = fails
+                     }) {
+
+    // 创建新用户
+    pool.query(`INSERT INTO feedback (username, description,contact,filename,registration_date) VALUES (?, ?,?,?,?)`, [username, description, contact, filename, registration_date], (err) => {
+        if (err) {
+            console.error('Failed to register user:', err);
+            fail(err)
+        } else {
+            succeed('反馈成功')
+        }
+    });
+}
+
+/**
+ * 清除问题表
+ */
+function delFeedback(succeeds, fails) {
+    pool.query(`TRUNCATE TABLE feedback;`, (error, res) => {
+        if (error) {
+            console.error('Failed to create table:', error);
+            fails(err)
+            return
+        }
+        succeeds()
+        console.log('清除问题反馈记录', res);
+    });
+}
+
+/**
+ * 查询问题表 SHOW COLUMNS FROM users WHERE Field IN ('username', 'phone');
+ * SHOW COLUMNS FROM feedback WHERE Field IN('username', 'description','contact','filename');
+ * SELECT username, description, contact, filename FROM feedback;
+ */
+
+function queryFeedback(succeeds, fails) {
+    pool.query(`SELECT username, description, contact, filename FROM feedback;`, (error, res) => {
+        if (error) {
+            console.error('Failed to create table:', error);
+            return fails(err)
+        }
+        succeeds(res)
+    });
+}
+
 // 3. 创建会员表并关联主表
 const createMembershipTable = (callback = () => {
 }) => {
@@ -61,6 +136,7 @@ const createMembershipTable = (callback = () => {
     CREATE TABLE membership (
     id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
+  INDEX idx_user_id (user_id),
   registration_date DATETIME NOT NULL,
   expiration_date DATETIME NOT NULL,
   amount DECIMAL(10, 2) NOT NULL,
@@ -99,7 +175,7 @@ const addForeignKeyConstraint = (callback = () => {
 function membershipTableOperations() {
     checkMembershipTableExists((err, tableExists) => {
         createMembershipTable(() => {
-            addForeignKeyConstraint()
+            // addForeignKeyConstraint()
         })
     }, 'membership')
 }
@@ -111,15 +187,17 @@ pool.getConnection((error, connection) => {
         return;
     }
     console.log('Connected to database');
-    const sqlCreate = "SELECT * FROM users;"
-
-    pool.query(sqlCreate, (error,res) => {
-        if (error) {
-            console.error('Failed to create table:', error);
-            return
-        }
-        console.log('Table created successfully',res);
-    });
+    // const sqlCreate = "SHOW INDEX FROM users;"
+    // // const sqlCreate = " ALTER TABLE users DROP INDEX membership_ibfk_1;"
+    const sqlCreate = `TRUNCATE TABLE membership;`
+    //
+    // pool.query(sqlCreate, (error, res) => {
+    //     if (error) {
+    //         console.error('Failed to create table:', error);
+    //         return
+    //     }
+    //     console.log('清除数', res);
+    // });
     /**
      *  创建用主户表
      */
@@ -141,17 +219,21 @@ pool.getConnection((error, connection) => {
         }
 
     }, 'users');
+    /**
+     *  创建问题反馈
+     */
+    checkMembershipTableExists(() => {
+        createFeedbackTable((err) => {
+            console.log('创建问题反馈表----err', err)
+        })
 
+    }, 'feedback')
 
 });
 
 // 修改注册用户账号接口的逻辑，将用户信息保存到数据库：
 function addUser({
-                     username,
-                     phone = null,
-                     password,
-                     succeed = succeeds,
-                     fail = fails
+                     username, phone = null, password, succeed = succeeds, fail = fails
                  }) {
 
     // 检查用户名是否已存在
@@ -168,8 +250,6 @@ function addUser({
             console.log('用户名已存在,请直接登陆')
             return fail('用户名已存在,请直接登陆');
         }
-
-
         // // 创建新用户
         pool.query(`INSERT INTO users (username, password,phone) VALUES (?, ?,?)`, [username, password, phone], (err) => {
             if (err) {
@@ -194,7 +274,32 @@ function login({username, password, succeed = succeeds, fail = fails}) {
         if (results[0].password !== password) {
             return fail('密码不对');
         }
-        succeed('login')
+        console.log('results----用户信息', results[0].id)
+        queryInformation({
+            user_id: results[0].id, succeed: (member) => {
+                console.log('member', member)
+                let memberIfon = {}
+                if (member[0] && JSON.stringify(member[0]) !== '{}') {
+                    delete member[0].user_id //删除会员表主键字段
+                    member[0].expiration_date = utils.formatDateTime(member[0].expiration_date)
+                    memberIfon = member[0]
+                    if (!member[0].level) return succeed(memberIfon);//等级0 停止操作
+                    const currentDate = new Date();
+                    const targetDate = new Date(member[0].expiration_date);
+                    if (targetDate < currentDate) {
+                        return chargebacks({
+                            amount: 5.00, username: results[0].id, succeed: () => {
+                                succeed(memberIfon)
+                            }
+                        })
+                    }
+                }
+                succeed(memberIfon)
+            }, fail: (err) => {
+                succeed({err})
+            },
+        })
+
     });
 }
 
@@ -212,24 +317,149 @@ function smaVerify({phone, succeed = succeeds, fail = fails}) {
 }
 
 /**
- * 会员信息存储
+ * 查询会员信息
  */
-function addNewMembers() {
+function queryInformation({
+                              user_id, succeed = succeeds, fail = fails
+                          }) {
+    pool.query('SELECT * FROM membership WHERE user_id = ?', [user_id], (err, results) => {
+        if (err) return fail(err);
+        succeed(results)
+    });
+}
+
+function getUserId({
+                       username, succeed = succeeds, fail = fails
+                   }) {
+    const getUserIDQuery = "SELECT id FROM users WHERE username = ?";
+    return new Promise((resolve, reject) => {
+        pool.query(getUserIDQuery, [username], (error, results) => {
+            if (error) {
+                console.error('Failed to get user ID:', error);
+                return reject(error);
+            }
+            console.log('getUserId--results', results)
+            resolve(results[0].id)
+        })
+    })
 
 }
 
-setTimeout(() => {
-    // login({username: 'ayong1',password:'1234'})
-    // const sql = "DROP TABLE users";
-    // pool.query(sql, (error, results) => {
-    //     if (error) {
-    //         console.error('Failed to drop table:', error);
-    //         return;
-    //     }
-    //     console.log('Table dropped successfully.');
-    // });
-}, 500)
-console.log('db---')
+/**
+ * 会员信息存储/金额添加
+ */
+async function insertMembershipInfo({
+                                        username,
+                                        registrationDate,
+                                        expirationDate,
+                                        amount,
+                                        succeed = succeeds,
+                                        fail = fails
+                                    }) {
+
+
+    let userId = ''
+    try {
+        userId = await getUserId({username})
+    } catch (error) {
+        console.log('error---getUserId', error)
+        return fails(error);
+    }
+    console.log('userId----', userId)
+    const getMembershipQuery = "SELECT * FROM membership WHERE user_id = ?";
+    pool.query(getMembershipQuery, [userId], (error, results) => {
+        if (error) {
+            console.error('Failed to insert membership info:', error);
+            return fails(error);
+        }
+        console.log('更新钱会员信息', results)
+        if (results.length) { //更新会员
+            const insertMembershipQuery = "UPDATE membership SET amount = amount + ?,level = ?, cumulativeAmount = cumulativeAmount + ? WHERE user_id = ?"
+            const upLevel = Math.floor(results[0].cumulativeAmount / 5)//level 5块钱张一级别
+            pool.query(insertMembershipQuery, [amount, upLevel, amount, userId], (error, updataResults) => {
+                if (error) {
+                    console.error('Failed to insert membership info:', error);
+                    return fails(error);
+                }
+                console.log('更新会员信息', updataResults)
+                console.log('更新内存信息', updataResults)
+
+                tokenInstance.setMemberInfo({userId: username, level: upLevel, amount: results[0].amount + amount})
+                succeed(results);
+            });
+        } else {// 新增会员
+            const insertMembershipQuery = "INSERT INTO membership (user_id, registration_date, expiration_date, amount, level,cumulativeAmount) VALUES (?, ?, ?, ?, ?,?)";
+            pool.query(insertMembershipQuery, [userId, registrationDate, expirationDate, amount, 1, amount], (error, creqacResults) => {
+                if (error) {
+                    console.error('Failed to insert membership info:', error);
+                    return fails(error);
+                }
+                console.log('新增会员前信息---', results)
+                tokenInstance.setMemberInfo({userId: username, level: 1, amount})
+                succeed(results);
+            });
+        }
+    });
+}
+
+/**
+ * 会员扣费
+ */
+function chargebacks({
+                         username, amount, succeed = succeeds, fail = fails
+                     }) {
+
+    const getMembershipQuery = "SELECT * FROM membership WHERE user_id = ?";
+    pool.query(getMembershipQuery, [username], (error, results) => {
+        if (error) {
+            console.error('Failed to insert membership info:', error);
+            return fails(error);
+        }
+        if (!results[0].level) return //等级0 停止操作
+        let level = results[0].level
+        if (results[0].amount === 0.00) level = 0, amount = 0;  //金额===0时候;等级 降级0
+        const insertMembershipQuery = "UPDATE membership amount = amount - ?,level = ?, WHERE user_id = ?"
+
+        pool.query(insertMembershipQuery, [amount, level, userId], (error, results) => {
+            if (error) {
+                console.error('Failed to insert membership info:', error);
+                return fails(error);
+            }
+            succeeds(results);
+        });
+
+    });
+
+}
+
+
+/**  查询所以信息∑ **/
+function allUserInfo(succeed, fail) {
+    const list = []
+    const sueraSql = `SHOW COLUMNS FROM users WHERE Field IN ('username', 'phone');`
+    pool.query(sueraSql, (err, results) => {
+        if (err) return fail(err);
+        list.push(results)
+        const membershipSql = `SHOW COLUMNS FROM membership WHERE Field IN ('user_id', 'amount','level');`
+        pool.query(membershipSql, (membererr, memberesults) => {
+            if (membererr) return fail(membererr);
+            list.push(memberesults)
+            succeed(list)
+        });
+    });
+
+}
+
 export default {
-    login, addUser, smaVerify
+    login,
+    addUser,
+    smaVerify,
+    addFeedback,
+    delFeedback,
+    queryFeedback,
+    queryInformation,
+    getUserId,
+    insertMembershipInfo,
+    chargebacks,
+    allUserInfo
 }

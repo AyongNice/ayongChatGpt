@@ -3,6 +3,7 @@ class Token {
     time = new Date() //时间对象
     tokenShelfLife = 2 //token过期时间 1小时
     static token; //单例
+    ordersPojo = {}
 
     static getInterest() {
         if (!this.token) {
@@ -14,16 +15,13 @@ class Token {
     /**
      *  获取token
      * @param userId  用户ID
-     * @param oldToken 旧token
-     * @param isFirst 是否首次获取
+     * @param level  会员等级
      * @returns {string}
      */
-    generateToken(userId, oldToken, isFirst) {
+    generateToken(userId, level = 0, amount = 0) {
         // 生成随机的 token 字符串
         const token = this.generateRandomToken();
-
         console.log('generateToken----验证', this.tokenMap[userId])
-
         /** 存在之前删除token **/
         if (this.tokenMap[userId]) {
             // /** 登陆获取token，存在删除 **/
@@ -34,7 +32,7 @@ class Token {
         }
         // 将 token 与用户ID关联，保存到内存中
         this.tokenMap[userId] = {
-            userId: userId, token: token, expiry: this.calculateExpiry(this.time.getTime()), // 计算 token 的过期时间
+            userId, token, level, amount, expiry: this.calculateExpiry(this.time.getTime()), // 计算 token 的过期时间
         }
         console.log('generateToken', this.tokenMap)
 
@@ -111,6 +109,40 @@ class Token {
     }
 
 
+    addMemberInfo(userId) {
+        return this.tokenMap[userId]
+    }
+
+    setMemberInfo({userId, amount, level}) {
+        console.log('setMemberInfo== this.tokenMap', this.tokenMap)
+        console.log('setMemberInfo', userId, amount, level)
+        this.tokenMap[userId].amount = amount
+        this.tokenMap[userId].level = level
+        console.log('----')
+
+        console.log(this.tokenMap[userId])
+
+    }
+
+
+    /** 存储用户订单map **/
+    addOrdersPojo(orders, userId) {
+        this.ordersPojo[orders] = {
+            orders,
+            userId
+        }
+    }
+
+    /**删除用户订单map **/
+    delectOrdersPojo(orders) {
+        delete this.ordersPojo[orders]
+    }
+
+    getOrdersPojoUseid(orders) {
+
+        console.log('this.ordersPojo',this.ordersPojo)
+        return this.ordersPojo[orders] ? this.ordersPojo[orders].userId : false
+    }
 }
 
 export default Token

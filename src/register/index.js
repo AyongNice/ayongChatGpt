@@ -7,8 +7,8 @@ const router = express.Router();
 
 import countenanced from "tencentcloud-sdk-nodejs"
 // 腾讯云短信验证码接口信息
-const secretId = ' ';
-const secretKey = ' ';
+const secretId = 'AKIDCl6D4g3C5i6E6jbKp43mHWinkUzGKJ9V';
+const secretKey = 'A6pKaaLr79zby6zd3ECyWoskcP0PZWRD';
 // 导入对应产品模块的client models。
 const smsClient = countenanced.sms.v20210111.Client
 /* 实例化要请求产品(以sms为例)的client对象 */
@@ -54,7 +54,7 @@ function generateRandomNumber() {
     return (Math.floor(Math.random() * (max - min + 1)) + min).toString();
 }
 
-function sendSms(smsCount) {
+function sendSms(smsCount,phone) {
     return new Promise((resolve, reject) => {
         const params = {
             /* 短信应用ID: 短信SmsSdkAppId在 [短信控制台] 添加应用后生成的实际SmsSdkAppId，示例如1400006666 */
@@ -69,7 +69,7 @@ function sendSms(smsCount) {
             SessionContext: `验证码为：{}，您正在登录，若非本人操作，请勿泄露。`,
             /* 下发手机号码，采用 e.164 标准，+[国家或地区码][手机号]
              * 示例如：+8613711112222， 其中前面有一个+号 ，86为国家码，13711112222为手机号，最多不要超过200个手机号*/
-            PhoneNumberSet: ["+8613240611891"],
+            PhoneNumberSet: ["+86" + phone],
             /* 模板 ID: 必须填写已审核通过的模板 ID。模板ID可登录 [短信控制台] 查看 */
             TemplateId: "1804261",
             /* 模板参数: 若无模板参数，则设置为空*/
@@ -97,15 +97,16 @@ router.post('/sma-verify', (req, res) => {
     mysqlDB.smaVerify({
             phone, succeed: async () => {
                 smaCaptchaMap[phone] = generateRandomNumber()
-            console.log(smaCaptchaMap)
+                console.log(smaCaptchaMap)
                 try {
-                    // await sendSms(smaCaptchaMap[phone]);
-                    res.status(200).json({message: '验证码发送成功',data:smaCaptchaMap[phone]});
+                    await sendSms(smaCaptchaMap[phone],phone);
+                    res.status(200).json({message: '验证码发送成功', data: smaCaptchaMap[phone]});
                 } catch (err) {
                     res.status(500).json({message: err});
                 }
             },
             fail: (err) => {
+                console.log('sma-verify--err',err)
                 res.status(500).json({message: err});
             }
         },
@@ -113,14 +114,15 @@ router.post('/sma-verify', (req, res) => {
 });
 router.post('/enroll', (req, res) => {
     const {username, password, phone, smaCaptcha} = req.body;
-    console.log('smaCaptcha',smaCaptcha)
-    console.log('phone',phone)
-    console.log("smaCaptchaMap",smaCaptchaMap)
-    console.log("smaCaptchaMap[phone]",smaCaptchaMap[phone])
+    console.log('smaCaptcha', smaCaptcha)
+    console.log('phone', phone)
+    console.log("smaCaptchaMap", smaCaptchaMap)
+    console.log("smaCaptchaMap[phone]", smaCaptchaMap[phone])
     if (smaCaptchaMap[phone] !== smaCaptcha) {
         return res.status(500).json({message: '验证码不对，请仔细核对验证码'});
     }
-    mysqlDB.addUser({username,password,phone,succeed:() => {
+    mysqlDB.addUser({
+        username, password, phone, succeed: () => {
             res.status(200).json({message: '注册成功，请登陆'});
         },
         fail: (err) => {

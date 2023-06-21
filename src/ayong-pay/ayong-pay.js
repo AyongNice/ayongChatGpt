@@ -9,6 +9,8 @@ import https from 'https';
 import CryptoJS from 'crypto-js';
 import url from "url";
 import querystring from 'querystring';
+import utils from "../utils/utils.js";
+
 const tokenInstance = tokens.getInterest()
 router.use(cookieParser());
 const SECRETKEY = 'vOt0NaQ0QRrC3yapTPSIen6S8LoPqMGs' //商家密钥
@@ -59,11 +61,10 @@ function addFieldsToFormData(form, fields) {
 }
 
 router.post('/start', (appRequest, appResponse) => {
-    const {username, password, money} = appRequest.body;
+    const {username, money} = appRequest.body;
     const token = appRequest.cookies.token;
     const userId = appRequest.cookies.user;
     const isTokenExpired = tokenInstance.isTokenExpired(token, userId)
-
 
     if (isTokenExpired === 3) return appResponse.status(401).json({
         message: '!尊敬的VIP贵宾，您的账号在别的地方登陆，请勿将账号密码泄露他人，您需要点击左下角退出重新登陆',
@@ -73,16 +74,17 @@ router.post('/start', (appRequest, appResponse) => {
         message: '!尊敬的VIP贵宾，登陆过期,您需要点击左下角退出重新登陆',
         code: 0
     });
+    console.log(money, userId, token)
     const params = {
         name: "超级无敌黄金至尊顶级SVIP会员",
         money: money,
         out_trade_no: generateRandomString(21),
-        notify_url: "http://127.0.0.1:8081/alpay/end?source=API",
-        pid: "20230429181725",
-        param: "金色传说",
+        notify_url: `http://127.0.0.1:8081/alpay/end`,
+        param: 'qew',
         return_url: "http://www.baidu.com",
         sign: "28f9583617d9caf66834292b6ab1cc89",
         sign_type: "MD5",
+        pid: "20230429181725",
         type: "wxpay"
     };
     const secretKey = SECRETKEY;
@@ -112,7 +114,8 @@ router.post('/start', (appRequest, appResponse) => {
             console.log('response', response);
             let newToken = ''
             if (isTokenExpired === 2) newToken = tokenInstance.refreshUserToken(token)
-            appResponse.status(200).json({message: '扫码支付', qrcode: response.qrcode, newToken,code:1});
+            tokenInstance.addOrdersPojo(response.trade_no, userId)
+            appResponse.status(200).json({message: '扫码支付', data: response.qrcode, newToken, code: 1});
 
         });
     });
@@ -134,32 +137,50 @@ router.get('/end', (req, res) => {
     // 发送事件数据
     const sendEvent = (data) => {
         res.write(`event: message\n`);
-        res.write(`data: ${data}\n\n`);
+        res.write(`data: ${JSON.stringify(data)}\n\n`);
     };
 
-    /** 获取请求参数 **/
-    const parsedUrl = url.parse(req.url);
-    const query = querystring.parse(parsedUrl.query);
-    /** 获取7支付接口访问处理 **/
-    if(query.source === 'API'){
-        mysqlDB.login({
-            username, password, succeed: () => {
-                const getToken = token.generateToken(username, token)
-                res.status(200).json({message: 'Login successful', token: getToken});
-            }, fail: (err) => {
-                console.log('results', err)
-                res.status(500).json({message: err});
-            }
-        })
-    }
-    /** 响应用户端过来的请求 **/
-    if(query.source === 'AYONG'){
-        const message = {
-            type: "succeed", money:1
-        };
-        sendEvent(JSON.stringify(message))
-    }
+    try {
+        /** 获取请求参数 **/
+        const parsedUrl = url.parse(req.url);
+        const {
+            source,
+            money,
+            out_trade_no,
+        } = querystring.parse(parsedUrl.query);
 
+        console.log('out_trade_no',out_trade_no)
+        console.log('money',money)
+        const username = tokenInstance.getOrdersPojoUseid(out_trade_no)
+        // console.log(' querystring.parse(parsedUrl.query)',querystring.parse(parsedUrl.query))
+        // let isTokenExpired = 1
+        // if (token && userId) isTokenExpired = tokenInstance.isTokenExpired(token, userId)
+        // if (![1, 3].includes(isTokenExpired)) return
+
+        /** 无订单信息 **/
+        // if (!username) return
+        /** 获取7支付接口访问处理 **/
+        if (source === 'API') {
+            console.log('/end---充值完成--', source)
+            mysqlDB.insertMembershipInfo({
+                username:'123132',
+                registrationDate: utils.getDATETIME(1),
+                expirationDate: utils.getDATETIME(60),
+                amount: money,
+                succeed: (message) => {
+                    console.log('充值成功message--', message)
+                    sendEvent({level: res.level, amount: res.amount})
+                },
+                fail: (err) => {
+                    console.log('results', err)
+                    sendEvent(err)
+                }
+            })
+        }
+
+    } catch (e) {
+
+    }
 
 
 });
