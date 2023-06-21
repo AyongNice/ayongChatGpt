@@ -68,18 +68,18 @@ router.post('/start', (appRequest, appResponse) => {
 
     if (isTokenExpired === 3) return appResponse.status(401).json({
         message: '!尊敬的VIP贵宾，您的账号在别的地方登陆，请勿将账号密码泄露他人，您需要点击左下角退出重新登陆',
-        code: 0
+        code: 3
     });
     if (!isTokenExpired) return appResponse.status(401).json({
         message: '!尊敬的VIP贵宾，登陆过期,您需要点击左下角退出重新登陆',
-        code: 0
+        code: 2
     });
     console.log(money, userId, token)
     const params = {
         name: "超级无敌黄金至尊顶级SVIP会员",
         money: money,
         out_trade_no: generateRandomString(21),
-        notify_url: `http://127.0.0.1:8081/alpay/end`,
+        notify_url: `http://16.16.75.201/alpay/end`,
         param: 'qew',
         return_url: "http://www.baidu.com",
         sign: "28f9583617d9caf66834292b6ab1cc89",
@@ -158,12 +158,12 @@ router.get('/end', (req, res) => {
         // if (![1, 3].includes(isTokenExpired)) return
 
         /** 无订单信息 **/
-        // if (!username) return
+        if (!username) return
         /** 获取7支付接口访问处理 **/
         if (source === 'API') {
             console.log('/end---充值完成--', source)
             mysqlDB.insertMembershipInfo({
-                username:'123132',
+                username:username,
                 registrationDate: utils.getDATETIME(1),
                 expirationDate: utils.getDATETIME(60),
                 amount: money,
