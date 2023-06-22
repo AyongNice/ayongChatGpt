@@ -139,6 +139,7 @@ router.get('/end', (req, res) => {
         res.write(`event: message\n`);
         res.write(`data: ${JSON.stringify(data)}\n\n`);
     };
+    console.log('支付-----req.url',req.url)
 
     try {
         /** 获取请求参数 **/

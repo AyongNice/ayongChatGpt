@@ -255,7 +255,6 @@ function addUser({
             if (err) {
                 console.error('Failed to register user:', err);
             } else {
-                console.error('注册成功');
                 succeed('注册成功')
             }
         });
