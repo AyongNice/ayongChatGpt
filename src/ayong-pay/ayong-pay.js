@@ -79,7 +79,7 @@ router.post('/start', (appRequest, appResponse) => {
         name: "超级无敌黄金至尊顶级SVIP会员",
         money: money,
         out_trade_no: generateRandomString(21),
-        notify_url: `http://16.16.75.201/alpay/end`,
+        notify_url: `http://13.51.250.185:8081/alpay/end`,
         param: 'qew',
         return_url: "http://www.baidu.com",
         sign: "28f9583617d9caf66834292b6ab1cc89",
@@ -149,18 +149,19 @@ router.get('/end', (req, res) => {
             out_trade_no,
         } = querystring.parse(parsedUrl.query);
 
-        console.log('out_trade_no',out_trade_no)
-        console.log('money',money)
+
         const username = tokenInstance.getOrdersPojoUseid(out_trade_no)
         // console.log(' querystring.parse(parsedUrl.query)',querystring.parse(parsedUrl.query))
         // let isTokenExpired = 1
         // if (token && userId) isTokenExpired = tokenInstance.isTokenExpired(token, userId)
         // if (![1, 3].includes(isTokenExpired)) return
-
+        console.log('out_trade_no',out_trade_no)
+        console.log('money',money)
+        console.log('username',username)
         /** 无订单信息 **/
         if (!username) return
         /** 获取7支付接口访问处理 **/
-        if (source === 'API') {
+        if (source === 'ayong') {
             console.log('/end---充值完成--', source)
             mysqlDB.insertMembershipInfo({
                 username:username,
