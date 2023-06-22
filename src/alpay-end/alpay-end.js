@@ -9,6 +9,10 @@ import utils from "../utils/utils.js";
 
 const tokenInstance = tokens.getInterest()
 router.use(cookieParser());
+
+/**
+ * 支付结果接受接口
+ */
 router.get('/', (req, res) => {
     // 设置响应头
     // res.setHeader('Content-Type', 'text/event-stream');
