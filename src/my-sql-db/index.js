@@ -8,12 +8,12 @@ const fails = () => {
 }
 const succeeds = () => {
 }
-// 创建数据库连接池
+// 创建数据库连接池docker build -t
 const pool = mysql.createPool({
     host: 'localhost',
     user: 'root',
     password: '1234',
-    database: 'mydatabase',
+    database: 'ayongnicejiayou',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
