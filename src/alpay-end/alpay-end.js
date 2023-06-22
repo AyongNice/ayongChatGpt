@@ -47,10 +47,10 @@ router.get('/', (req, res) => {
         /** 无订单信息 **/
         if (!username) return
         /** 获取7支付接口访问处理 **/
-        if (source === 'ayong') {
+        if (source !== 'ayong') {
             console.log('/end---充值完成--', source)
             mysqlDB.insertMembershipInfo({
-                username:username,
+                username,
                 registrationDate: utils.getDATETIME(1),
                 expirationDate: utils.getDATETIME(60),
                 amount: money,
