@@ -16,7 +16,7 @@ const API_KEY = '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'; // 替换
 const options = {
     hostname: 'api.openai.com', path: '/v1/chat/completions', method: 'POST', headers: {
         'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}`,
-    }, agent: agent
+    }
 };
 router.get('/events', (req, res) => {
     // 设置响应头
