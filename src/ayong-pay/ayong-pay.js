@@ -130,10 +130,10 @@ router.post('/start', (appRequest, appResponse) => {
 });
 router.get('/end', (req, res) => {
     // 设置响应头
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('Access-Control-Allow-Origin', '*'); // 跨域访问控制
+    // res.setHeader('Content-Type', 'text/event-stream');
+    // res.setHeader('Cache-Control', 'no-cache');
+    // res.setHeader('Connection', 'keep-alive');
+    // res.setHeader('Access-Control-Allow-Origin', '*'); // 跨域访问控制
     // 发送事件数据
     const sendEvent = (data) => {
         res.write(`event: message\n`);
@@ -181,7 +181,7 @@ router.get('/end', (req, res) => {
         }
 
     } catch (e) {
-
+        console.log('支付结果报错',e)
     }
 
 

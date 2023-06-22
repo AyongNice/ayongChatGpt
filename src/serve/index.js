@@ -10,6 +10,7 @@ import problemFeedback from '../problem-feedback/problem-feedback.js'//问题反
 import allUserInfo from "../all-user-info/all-user-info.js"; //所有人员信息查询
 import memberInformation from "../member-Information/member-Information.js"; //所有人员信息查询
 import chatGpt from "../chat-gpt/chat-gpt.js"; //chagpt接口
+import alpayEnd from "../alpay-end/alpay-end.js"; //支付结束
 import path from 'path';
 
 const app = express();
@@ -32,7 +33,7 @@ app.use('/all-user-info', allUserInfo)
 app.use('/problem-feedback', problemFeedback)
 app.use('/member-information', memberInformation)
 app.use('/chat-gpt', chatGpt)
-
+app.use('/alpay-end', alpayEnd)
 // 启动服务
 app.listen(port, () => {
     console.log('Server started on port' + port);
