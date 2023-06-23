@@ -372,8 +372,8 @@ async function insertMembershipInfo({
             return fails(error);
         }
         console.log('查询会员信息', results)
-        console.log('查询会员信息长度', results.length)
-        if (results.length) { //更新会员
+        console.log('查询会员信息长度', typeof results.length)
+        if (results.length !== 0) { //更新会员
             const insertMembershipQuery = "UPDATE membership SET amount = amount + ?,level = ?, cumulativeAmount = cumulativeAmount + ? WHERE user_id = ?"
             const upLevel = Math.floor(results[0].cumulativeAmount / 5)//level 5块钱张一级别
             pool.query(insertMembershipQuery, [amount, upLevel, amount, userId], (error, updataResults) => {
@@ -393,7 +393,7 @@ async function insertMembershipInfo({
                     return fails(error);
                 }
                 console.log('新增会员前信息---', creqacResults)
-                const info ={userId: username, level: 1, amount}
+                const info = {userId: username, level: 1, amount}
                 tokenInstance.setMemberInfo(info)
                 succeed(info);
             });
