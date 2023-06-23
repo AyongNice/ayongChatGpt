@@ -140,6 +140,7 @@ const createMembershipTable = (callback = () => {
   registration_date DATETIME NOT NULL,
   expiration_date DATETIME NOT NULL,
   amount DECIMAL(10, 2) NOT NULL,
+  cumulativeAmount DECIMAL(10, 2) NOT NULL,
   level INT NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users (id)
     )
@@ -189,15 +190,16 @@ pool.getConnection((error, connection) => {
     console.log('Connected to database');
     // const sqlCreate = "SHOW INDEX FROM users;"
     // // const sqlCreate = " ALTER TABLE users DROP INDEX membership_ibfk_1;"
-    const sqlCreate = `TRUNCATE TABLE membership;`
-    //
-    // pool.query(sqlCreate, (error, res) => {
-    //     if (error) {
-    //         console.error('Failed to create table:', error);
-    //         return
-    //     }
-    //     console.log('清除数', res);
-    // });
+//     const sqlCreate = `ALTER TABLE membership ADD cumulativeAmount DECIMAL(10, 2) NOT NULL;
+// `
+//     //
+//     pool.query(sqlCreate, (error, res) => {
+//         if (error) {
+//             console.error('Failed to create table:', error);
+//             return
+//         }
+//         console.log('增加累计消费表字段', res);
+//     });
     /**
      *  创建用主户表
      */
@@ -372,17 +374,17 @@ async function insertMembershipInfo({
             return fails(error);
         }
         console.log('查询会员信息', results)
-        console.log('查询会员信息长度', typeof results.length)
+        console.log('查询会员信息长度', results.length, typeof results.length)
 
         if (results.length !== 0) { //更新会员
             const insertMembershipQuery = "UPDATE membership SET amount = amount + ?,level = ?, cumulativeAmount = cumulativeAmount + ? WHERE user_id = ?"
-            const upLevel = Math.floor(results[0].cumulativeAmount / 5)//level 5块钱张一级别
+            const upLevel = Math.floor(results[0].cumulativeAmount / 5) || 1//level 5块钱张一级别 不到一级强制1级
             pool.query(insertMembershipQuery, [amount, upLevel, amount, userId], (error, updataResults) => {
                 if (error) {
-                    console.error('Failed to insert membership info:', error);
+                    console.log('更新会员 membership info:', error);
                     return fails(error);
                 }
-                const info = {userId: username, level: upLevel, amount: results[0].amount + amount}
+                const info = {userId: username, level: upLevel, amount: Number(results[0].amount) + Number(amount)}
                 tokenInstance.setMemberInfo(info)
                 succeed(info);
             });
@@ -390,7 +392,7 @@ async function insertMembershipInfo({
             const insertMembershipQuery = "INSERT INTO membership (user_id, registration_date, expiration_date, amount, level,cumulativeAmount) VALUES (?, ?, ?, ?, ?,?)";
             pool.query(insertMembershipQuery, [userId, registrationDate, expirationDate, amount, 1, amount], (error, creqacResults) => {
                 if (error) {
-                    console.error('Failed to insert membership info:', error);
+                    console.log('新增会员:', error);
                     return fails(error);
                 }
                 console.log('新增会员前信息---', creqacResults)
@@ -433,7 +435,7 @@ function chargebacks({
 }
 
 
-/**  查询所以信息∑ **/
+/**  查询所以信息 **/
 function allUserInfo(succeed, fail) {
     const list = []
     const sueraSql = `SHOW COLUMNS FROM users WHERE Field IN ('username', 'phone');`
