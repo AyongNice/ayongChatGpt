@@ -373,6 +373,7 @@ async function insertMembershipInfo({
         }
         console.log('查询会员信息', results)
         console.log('查询会员信息长度', typeof results.length)
+
         if (results.length !== 0) { //更新会员
             const insertMembershipQuery = "UPDATE membership SET amount = amount + ?,level = ?, cumulativeAmount = cumulativeAmount + ? WHERE user_id = ?"
             const upLevel = Math.floor(results[0].cumulativeAmount / 5)//level 5块钱张一级别
