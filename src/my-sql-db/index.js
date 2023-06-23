@@ -385,7 +385,11 @@ async function insertMembershipInfo({
                     return fails(error);
                 }
 
-                const info = {userId: username, level: upLevel, amount: Number(results[0].amount) + Number(amount)}
+                const info = {
+                    userId: username,
+                    level: upLevel,
+                    amount: (Number(results[0].amount) * 100 + Number(amount) * 100) / 100
+                }
                 tokenInstance.setMemberInfo(info)
                 succeed(info);
             });
