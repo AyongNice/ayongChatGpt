@@ -384,6 +384,7 @@ async function insertMembershipInfo({
                     console.log('更新会员 membership info:', error);
                     return fails(error);
                 }
+
                 const info = {userId: username, level: upLevel, amount: Number(results[0].amount) + Number(amount)}
                 tokenInstance.setMemberInfo(info)
                 succeed(info);
