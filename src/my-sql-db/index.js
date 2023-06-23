@@ -371,7 +371,8 @@ async function insertMembershipInfo({
             console.error('Failed to insert membership info:', error);
             return fails(error);
         }
-        console.log('更新钱会员信息', results)
+        console.log('查询会员信息', results)
+        console.log('查询会员信息长度', results.length)
         if (results.length) { //更新会员
             const insertMembershipQuery = "UPDATE membership SET amount = amount + ?,level = ?, cumulativeAmount = cumulativeAmount + ? WHERE user_id = ?"
             const upLevel = Math.floor(results[0].cumulativeAmount / 5)//level 5块钱张一级别
@@ -380,11 +381,9 @@ async function insertMembershipInfo({
                     console.error('Failed to insert membership info:', error);
                     return fails(error);
                 }
-                console.log('更新会员信息', updataResults)
-                console.log('更新内存信息', updataResults)
-
-                tokenInstance.setMemberInfo({userId: username, level: upLevel, amount: results[0].amount + amount})
-                succeed(results);
+                const info = {userId: username, level: upLevel, amount: results[0].amount + amount}
+                tokenInstance.setMemberInfo(info)
+                succeed(info);
             });
         } else {// 新增会员
             const insertMembershipQuery = "INSERT INTO membership (user_id, registration_date, expiration_date, amount, level,cumulativeAmount) VALUES (?, ?, ?, ?, ?,?)";
@@ -393,9 +392,10 @@ async function insertMembershipInfo({
                     console.error('Failed to insert membership info:', error);
                     return fails(error);
                 }
-                console.log('新增会员前信息---', results)
-                tokenInstance.setMemberInfo({userId: username, level: 1, amount})
-                succeed(results);
+                console.log('新增会员前信息---', creqacResults)
+                const info ={userId: username, level: 1, amount}
+                tokenInstance.setMemberInfo(info)
+                succeed(info);
             });
         }
     });

@@ -48,14 +48,14 @@ router.get('/', (req, res) => {
         if (!username) return
         /** 获取7支付接口访问处理 **/
         if (source !== 'ayong') {
-            console.log('/end---充值完成--', source)
+            console.log('/end---充值完成响应接口--', source)
             mysqlDB.insertMembershipInfo({
                 username,
                 registrationDate: utils.getDATETIME(1),
                 expirationDate: utils.getDATETIME(60),
                 amount: money,
-                succeed: (message) => {
-                    console.log('充值成功message--', message)
+                succeed: (res) => {
+                    console.log('充值成功message--', res)
                     sendEvent({level: res.level, amount: res.amount})
                 },
                 fail: (err) => {
