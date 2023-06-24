@@ -14,6 +14,9 @@ router.use(cookieParser());
 router.post('/', async (appRequest, appResponse) => {
     const token = appRequest.cookies.token;
     const userId = appRequest.cookies.user;
+    console.log('appRequest.cookies', appRequest.cookies)
+    console.log('token', token)
+    console.log('userId', userId)
     const isTokenExpired = tokenInstance.isTokenExpired(token, userId)
 
     if (isTokenExpired === 3) return appResponse.status(401).json({

@@ -18,7 +18,7 @@ const port = 8081;
 /** 静态资源开放 **/
 app.use('/images', express.static(path.join(process.cwd(), 'images')));
 
-app.use(cors())//跨域需求 为了方便本地请求，如果部署线上 需要禁止他（地址不泄漏情况☺️可以不管）
+app.use(cors({origin: true, credentials: true}));//跨域需求 为了方便本地请求，如果部署线上 需要禁止他（地址不泄漏情况☺️可以不管）
 app.use(bodyParser.json({limit: '10mb'}));//文件流长字符处理
 app.use(bodyParser.urlencoded({limit: '10mb', extended: true}));
 // 添加中间件和配置项

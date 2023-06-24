@@ -189,18 +189,6 @@ pool.getConnection((error, connection) => {
         return;
     }
     console.log('Connected to database');
-    // const sqlCreate = "SHOW INDEX FROM users;"
-    // // const sqlCreate = " ALTER TABLE users DROP INDEX membership_ibfk_1;"
-//     const sqlCreate = `ALTER TABLE membership ADD cumulativeAmount DECIMAL(10, 2) NOT NULL;
-// `
-//     //
-//     pool.query(sqlCreate, (error, res) => {
-//         if (error) {
-//             console.error('Failed to create table:', error);
-//             return
-//         }
-//         console.log('增加累计消费表字段', res);
-//     });
     /**
      *  创建用主户表
      */

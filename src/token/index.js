@@ -1,7 +1,7 @@
 class Token {
     tokenMap = {}; //token内存对象
     time = new Date() //时间对象
-    tokenShelfLife = 2 //token过期时间 1小时
+    tokenShelfLife = 5 //token过期时间 1小时
     static token; //单例
     ordersPojo = {}
 
