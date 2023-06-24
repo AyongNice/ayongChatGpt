@@ -27,7 +27,7 @@ router.post('/', (req, res) => {
             console.log('login---成功')
         }, fail: (err) => {
             console.log('login---失败', err)
-            res.status(500).json({message: err});
+            // res.status(500).json({message: err});
 
         }
     })

@@ -34,6 +34,49 @@ app.use('/problem-feedback', problemFeedback)
 app.use('/member-information', memberInformation)
 app.use('/chat-gpt', chatGpt)
 app.use('/alpay-end', alpayEnd)
+import http from 'http';
+
+// 请求数据
+const data = JSON.stringify({
+    username: '123132',
+    password: '123'
+});
+
+// 请求参数http://13.51.250.185:8081/
+const options = {
+    hostname: '13.51.250.185',
+    port: 8081,
+    path: '/login',
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': data.length
+    }
+};
+
+// // 发送请求
+// const req = http.request(options, (res) => {
+//     let response = '';
+//
+//     // 接收响应数据
+//     res.on('data', (chunk) => {
+//         response += chunk;
+//     });
+//
+//     // 接收完整响应
+//     res.on('end', () => {
+//         console.log(111, response);
+//     });
+// });
+// //
+// // 发送请求数据
+// req.write(data);
+// req.on('error', error => {
+//     console.log('error', error)
+// });
+// // 结束请求
+// req.end();
+
 // 启动服务
 app.listen(port, () => {
     console.log('Server started on port' + port);
