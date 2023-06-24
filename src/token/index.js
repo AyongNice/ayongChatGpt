@@ -108,18 +108,18 @@ class Token {
         }
     }
 
-
-    addMemberInfo(userId) {
+    /** 查询会员内存信息 **/
+    getMemberInfo(userId) {
         return this.tokenMap[userId]
     }
 
+    /** 设置会员内存信息 **/
     setMemberInfo({userId, amount, level}) {
         console.log('setMemberInfo== this.tokenMap', this.tokenMap)
         console.log('setMemberInfo', userId, amount, level)
+        if (!this.tokenMap[userId]) return
         this.tokenMap[userId].amount = amount
         this.tokenMap[userId].level = level
-        console.log('----')
-
         console.log(this.tokenMap[userId])
 
     }
@@ -139,8 +139,7 @@ class Token {
     }
 
     getOrdersPojoUseid(orders) {
-
-        console.log('this.ordersPojo',this.ordersPojo)
+        console.log('this.ordersPojo', this.ordersPojo)
         return this.ordersPojo[orders] ? this.ordersPojo[orders].userId : false
     }
 }

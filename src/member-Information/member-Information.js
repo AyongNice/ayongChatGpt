@@ -26,7 +26,7 @@ router.post('/', async (appRequest, appResponse) => {
     });
     let newToken = ''
     if (isTokenExpired === 2) newToken = tokenInstance.refreshUserToken(token)
-    const data = tokenInstance.addMemberInfo(userId)
+    const data = tokenInstance.getMemberInfo(userId)
     appResponse.status(200).json({message: '会员SVIP', token: newToken, data});
 })
 export default router

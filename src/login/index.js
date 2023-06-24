@@ -24,9 +24,11 @@ router.post('/', (req, res) => {
         username, password, succeed: (data) => {
             const getToken = token.generateToken(username, data.level || 0, data.amount || 0)
             res.status(200).json({message: 'Login successful', token: getToken});
+            console.log('login---成功')
         }, fail: (err) => {
-            console.log('results', err)
+            console.log('login---失败', err)
             res.status(500).json({message: err});
+
         }
     })
 

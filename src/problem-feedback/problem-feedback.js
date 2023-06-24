@@ -56,7 +56,7 @@ router.post('/upload', upload.single('image'), (req, res) => {
     let filename = ''
     if (req.file) {
         // 构建文件路径
-        filename = path.join(process.cwd(), 'images') + req.file.filename;
+        filename =  req.file.path;
     }
     mysqlDB.addFeedback({
         username,
