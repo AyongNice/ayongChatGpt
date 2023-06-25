@@ -98,8 +98,9 @@ class Token {
      */
     deleteToken(token, userId) {
         console.log(token, userId)
+        console.log('userId--类型', typeof userId)
         /** 存在之前删除token **/
-        if (token && userId && this.tokenMap[userId] && this.tokenMap[userId].userId === userId) {
+        if (token && userId && this.tokenMap[userId] && this.tokenMap[userId].userId === userId.toString()) {
             delete this.tokenMap[userId]
             console.log('deleteToken', this.tokenMap)
             return true

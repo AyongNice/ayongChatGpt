@@ -446,6 +446,44 @@ function allUserInfo(succeed, fail) {
 
 }
 
+/**
+ * 查询会员信息
+ */
+async function inquireAboutMember(username, succeed) {
+    let user_id = ''
+    try {
+        user_id = await getUserId({username})
+    } catch (error) {
+        console.log('error---getUserId', error)
+        return fails(error);
+    }
+    queryInformation({
+        user_id, succeed: (member) => {
+            console.log('member', member)
+            let memberIfon = {}
+            if (member[0] && JSON.stringify(member[0]) !== '{}') {
+                delete member[0].user_id //删除会员表主键字段
+                member[0].expiration_date = utils.formatDateTime(member[0].expiration_date)
+                memberIfon = member[0]
+                if (!member[0].level) return succeed(memberIfon);//等级0 停止操作
+                const currentDate = new Date();
+                const targetDate = new Date(member[0].expiration_date);
+                if (targetDate < currentDate) {
+                    return chargebacks({
+                        amount: 5.00, username: results[0].id, succeed: () => {
+                            succeed(memberIfon)
+                        }
+                    })
+                }
+            }
+            succeed(memberIfon)
+        }, fail: (err) => {
+            succeed({err})
+        },
+    })
+
+}
+
 export default {
     login,
     addUser,

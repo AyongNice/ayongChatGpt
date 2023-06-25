@@ -5,6 +5,7 @@ import express from 'express'
 import cookieParser from 'cookie-parser';
 import tokens from "../token/index.js";
 import HttpsProxyAgent from "https-proxy-agent";
+
 const router = express.Router();
 
 const tokenInstance = tokens.getInterest()
@@ -71,9 +72,8 @@ router.get('/events', (req, res) => {
             // if (streams !== '[DONE]') {
             // JSON.parse(streams).choices[0].delta.content
             try {
-                console.log('datachunk---', JSON.parse(streams));
+
                 // const newToken = tokenInstance.refreshUserToken(token)
-                console.log('streams', streams)
                 sendEvent(datachunk);
             } catch (e) {
                 sendEvent(datachunk);
