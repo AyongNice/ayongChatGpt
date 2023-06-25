@@ -18,7 +18,8 @@ const port = 8081;
 /** 静态资源开放 **/
 app.use('/images', express.static(path.join(process.cwd(), 'images')));
 
-app.use(cors({origin: true, credentials: true}));//跨域需求 为了方便本地请求，如果部署线上 需要禁止他（地址不泄漏情况☺️可以不管）
+app.use(cors());//跨域需求 为了方便本地请求，如果部署线上 需要禁止他（地址不泄漏情况☺️可以不管）
+
 app.use(bodyParser.json({limit: '10mb'}));//文件流长字符处理
 app.use(bodyParser.urlencoded({limit: '10mb', extended: true}));
 // 添加中间件和配置项
@@ -34,48 +35,8 @@ app.use('/problem-feedback', problemFeedback)
 app.use('/member-information', memberInformation)
 app.use('/chat-gpt', chatGpt)
 app.use('/alpay-end', alpayEnd)
-import http from 'http';
 
-// 请求数据
-const data = JSON.stringify({
-    username: '123132',
-    password: '123'
-});
 
-// 请求参数http://13.51.250.185:8081/
-const options = {
-    hostname: '13.51.250.185',
-    port: 8081,
-    path: '/login',
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': data.length
-    }
-};
-
-// // 发送请求
-// const req = http.request(options, (res) => {
-//     let response = '';
-//
-//     // 接收响应数据
-//     res.on('data', (chunk) => {
-//         response += chunk;
-//     });
-//
-//     // 接收完整响应
-//     res.on('end', () => {
-//         console.log(111, response);
-//     });
-// });
-// //
-// // 发送请求数据
-// req.write(data);
-// req.on('error', error => {
-//     console.log('error', error)
-// });
-// // 结束请求
-// req.end();
 
 // 启动服务
 app.listen(port, () => {

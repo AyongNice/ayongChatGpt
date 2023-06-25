@@ -117,7 +117,6 @@ router.post('/enroll', (req, res) => {
     console.log('smaCaptcha', smaCaptcha)
     console.log('phone', phone)
     console.log("smaCaptchaMap", smaCaptchaMap)
-    console.log("smaCaptchaMap[phone]", smaCaptchaMap[phone])
     if (smaCaptchaMap[phone] !== smaCaptcha) {
         return res.status(500).json({message: '验证码不对，请仔细核对验证码'});
     }
