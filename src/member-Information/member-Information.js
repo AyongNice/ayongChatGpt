@@ -9,6 +9,7 @@ const router = express.Router();
 import tokens from "../token/index.js";
 
 const tokenInstance = tokens.getInterest()
+
 router.use(cookieParser());
 
 router.post('/', async (appRequest, appResponse) => {
