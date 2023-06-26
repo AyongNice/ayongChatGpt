@@ -22,15 +22,11 @@ router.post('/', (req, res) => {
 
     mysqlDB.login({
         username, password, succeed: (data) => {
-
             console.log('data---d登陆', data)
             const getToken = token.generateToken(username, data.level || 0, data.amount || 0)
             res.status(200).json({message: 'Login successful', token: getToken, code: 1});
-            console.log('login---成功')
         }, fail: (err) => {
-            console.log('login---失败', err)
-            res.status(200).json({message: 'Login ---fail', code: 1});
-            // res.status(500).json({message: err});
+            res.status(401).json({message: err, code: 0});
 
         }
     })
