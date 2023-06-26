@@ -10,14 +10,8 @@ const succeeds = () => {
 }
 // 创建数据库连接池docker build -t
 const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: '1234',
-    database: 'ayongnicejiayou',
-    // database: 'mydatabase',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+    host: 'localhost', user: 'root', password: '1234', // database: 'ayongnicejiayou',
+    database: 'mydatabase', waitForConnections: true, connectionLimit: 10, queueLimit: 0
 });
 
 
@@ -84,8 +78,7 @@ function createFeedbackTable(callback = () => {
 }
 
 function addFeedback({
-                         username, description, contact, filename, registration_date,
-                         succeed = succeeds, fail = fails
+                         username, description, contact, filename, registration_date, succeed = succeeds, fail = fails
                      }) {
 
     // 创建新用户
@@ -278,7 +271,7 @@ function login({username, password, succeed = succeeds, fail = fails}) {
                     const targetDate = new Date(member[0].expiration_date);
                     if (targetDate < currentDate) {
                         return chargebacks({
-                            amount: 5.00, username: results[0].id, succeed: () => {
+                            amount: 5.00, userId: results[0].id, succeed: () => {
                                 succeed(memberIfon)
                             }
                         })
@@ -402,20 +395,24 @@ async function insertMembershipInfo({
  * 会员扣费
  */
 function chargebacks({
-                         username, amount, succeed = succeeds, fail = fails
+                         userId, amount, succeed = succeeds, fail = fails
                      }) {
 
     const getMembershipQuery = "SELECT * FROM membership WHERE user_id = ?";
-    pool.query(getMembershipQuery, [username], (error, results) => {
+    pool.query(getMembershipQuery, [userId], (error, results) => {
         if (error) {
             console.error('Failed to insert membership info:', error);
             return fails(error);
         }
-        if (!results[0].level) return //等级0 停止操作
+        if (!Number(results[0].level)) return //等级0 停止操作
         let level = results[0].level
-        if (results[0].amount === 0.00) level = 0, amount = 0;  //金额===0时候;等级 降级0
+        if (results[0].amount > amount) {
+            level = Math.ceil((results[0].amount - amount) / 5); //只要有钱就给1级别
+        } else {
+            level = 0
+            amount = results[0].amount; //余额小于扣除额度 直接扣完
+        }
         const insertMembershipQuery = "UPDATE membership amount = amount - ?,level = ?, WHERE user_id = ?"
-
         pool.query(insertMembershipQuery, [amount, level, userId], (error, results) => {
             if (error) {
                 console.error('Failed to insert membership info:', error);
