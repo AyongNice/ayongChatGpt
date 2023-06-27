@@ -3,19 +3,16 @@ import utils from "../utils/utils.js";
 import tokens from "../token/index.js";
 
 const tokenInstance = tokens.getInterest()
-
+const UNITPRICE = 50; //一元50次
+const MEMBERPRICE = 3; //每月3元
 const fails = () => {
 }
 const succeeds = () => {
 }
 // 创建数据库连接池docker build -t
 const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: '1234',
-    database: 'ayongnicejiayou',
-    // database: 'mydatabase',
-    waitForConnections: true, connectionLimit: 10, queueLimit: 0
+    host: 'localhost', user: 'root', password: '1234', // database: 'ayongnicejiayou',
+    database: 'mydatabase', waitForConnections: true, connectionLimit: 10, queueLimit: 0
 });
 
 
@@ -140,6 +137,7 @@ const createMembershipTable = (callback = () => {
   amount DECIMAL(10, 2) NOT NULL,
   cumulativeAmount DECIMAL(10, 2) NOT NULL,
   level INT NOT NULL,
+  apiCalls INT DEFAULT 0,
   FOREIGN KEY (user_id) REFERENCES users (id)
     )
   `;
@@ -261,7 +259,7 @@ function login({username, password, succeed = succeeds, fail = fails}) {
         if (results[0].password !== password) {
             return fail('密码不对');
         }
-        console.log('results----用户信息', results[0].id)
+        console.log('results----用户信息', results[0])
         queryInformation({
             user_id: results[0].id, succeed: (member) => {
                 console.log('member', member)
@@ -269,21 +267,24 @@ function login({username, password, succeed = succeeds, fail = fails}) {
                 if (member[0] && JSON.stringify(member[0]) !== '{}') {
                     delete member[0].user_id //删除会员表主键字段
                     member[0].expiration_date = utils.formatDateTime(member[0].expiration_date)
-                    memberIfon = member[0]
+                    memberIfon = member[0];//会员信息
+                    memberIfon.count = results[0].count;//免费余额
                     if (!member[0].level) return succeed(memberIfon);//等级0 停止操作
                     const currentDate = new Date();
                     const targetDate = new Date(member[0].expiration_date);
+
+                    /** 会员到期每月扣费 **/
                     if (targetDate < currentDate) {
                         return chargebacks({
-                            amount: 5.00, userId: results[0].id, succeed: () => {
+                            amount: MEMBERPRICE, userId: results[0].id, succeed: () => {
                                 succeed(memberIfon)
                             }
                         })
                     }
                 }
-                succeed(memberIfon)
+                succeed({count: results[0].count})
             }, fail: (err) => {
-                succeed({err})
+                succeed({count: results[0].count})
             },
         })
 
@@ -361,11 +362,12 @@ async function insertMembershipInfo({
         }
         console.log('查询会员信息', results)
         console.log('查询会员信息长度', results.length, typeof results.length)
-
+// 计算 apiCalls 的值
+        const apiCalls = amount * UNITPRICE; //API 调用余额次数
         if (results.length !== 0) { //更新会员
-            const insertMembershipQuery = "UPDATE membership SET amount = amount + ?,level = ?, cumulativeAmount = cumulativeAmount + ? WHERE user_id = ?"
+            const insertMembershipQuery = "UPDATE membership SET amount = amount + ?,level = ?,apiCalls=?, cumulativeAmount = cumulativeAmount + ? WHERE user_id = ?"
             const upLevel = Math.floor(results[0].cumulativeAmount / 5) || 1//level 5块钱张一级别 不到一级强制1级
-            pool.query(insertMembershipQuery, [amount, upLevel, amount, userId], (error, updataResults) => {
+            pool.query(insertMembershipQuery, [amount, upLevel, apiCalls, amount, userId], (error, updataResults) => {
                 if (error) {
                     console.log('更新会员 membership info:', error);
                     return fails(error);
@@ -380,18 +382,44 @@ async function insertMembershipInfo({
                 succeed(info);
             });
         } else {// 新增会员
-            const insertMembershipQuery = "INSERT INTO membership (user_id, registration_date, expiration_date, amount, level,cumulativeAmount) VALUES (?, ?, ?, ?, ?,?)";
-            pool.query(insertMembershipQuery, [userId, registrationDate, expirationDate, amount, 1, amount], (error, creqacResults) => {
+            const upLevel = Math.floor(amount / 5) || 1//level 5块钱张一级别 不到一级强制1级
+            const insertMembershipQuery = "INSERT INTO membership (user_id, registration_date, expiration_date, amount, level,cumulativeAmount,apiCalls) VALUES (?, ?, ?, ?, ?,?,?)";
+            pool.query(insertMembershipQuery, [userId, registrationDate, expirationDate, amount, upLevel, amount, apiCalls], (error, creqacResults) => {
                 if (error) {
                     console.log('新增会员:', error);
                     return fails(error);
                 }
+
                 console.log('新增会员前信息---', creqacResults)
-                const info = {userId: username, level: 1, amount}
+                const info = {userId: username, level: upLevel, amount}
                 tokenInstance.setMemberInfo(info)
                 succeed(info);
             });
         }
+    });
+}
+
+/**
+ * 更新会员APi使用次数
+ * @param succeed {Function} 成功
+ * @param fail{Function} 失败
+ * @return void
+ */
+async function updataMemberApiCalls(apiCalls, username, succeed, fail) {
+    let userId = ''
+    try {
+        userId = await getUserId({username})
+    } catch (error) {
+        console.log('error---getUserId', error)
+        return fail(error);
+    }
+    const insertMembershipQuery = "UPDATE membership SET apiCalls=? WHERE user_id = ?";
+    pool.query(insertMembershipQuery, [apiCalls, userId], (error, creqacResults) => {
+        if (error) {
+            console.log('更新会员API使用次数:', error);
+            return fail(error);
+        }
+        succeed();
     });
 }
 
@@ -485,6 +513,22 @@ async function inquireAboutMember(username, succeed) {
 
 }
 
+/**
+ * 更新主表免费接口次数
+ */
+function updatAgratisCount(count, username, succeed, fail) {
+    const insertMembershipQuery = "UPDATE users SET count=? WHERE username = ?";
+    if (typeof count !== 'number' || Number(count) < 0) count = 0
+    pool.query(insertMembershipQuery, [count, username], (error, creqacResults) => {
+        if (error) {
+            console.log('更新会员API使用次数:', error);
+            return fail(error);
+        }
+        console.log('更新会员API使用次数--ok:', error);
+        succeed();
+    });
+}
+
 export default {
     login,
     addUser,
@@ -496,5 +540,7 @@ export default {
     getUserId,
     insertMembershipInfo,
     chargebacks,
-    allUserInfo
+    allUserInfo,
+    updataMemberApiCalls,
+    updatAgratisCount
 }

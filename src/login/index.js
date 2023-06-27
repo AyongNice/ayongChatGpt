@@ -23,7 +23,7 @@ router.post('/', (req, res) => {
     mysqlDB.login({
         username, password, succeed: (data) => {
             console.log('data---d登陆', data)
-            const getToken = token.generateToken(username, data.level || 0, data.amount || 0)
+            const getToken = token.generateToken(username, data.level || 0, data.amount || 0, data.apiCalls || 0, data.count)
             res.status(200).json({message: 'Login successful', token: getToken, code: 1});
         }, fail: (err) => {
             res.status(401).json({message: err, code: 0});

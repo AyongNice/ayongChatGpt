@@ -16,26 +16,24 @@ class Token {
      *  获取token
      * @param userId  用户ID
      * @param level  会员等级
+     * @param amount  会员余额
+     * @param apiCalls  {number} APi调用次数
+     * @param count  {number} 免费给调用次数
      * @returns {string}
      */
-    generateToken(userId, level = 0, amount = 0) {
+    generateToken(userId, level = 0, amount = 0, apiCalls = 0, count = 50) {
         // 生成随机的 token 字符串
         const token = this.generateRandomToken();
-        console.log('generateToken----验证', this.tokenMap[userId])
         /** 存在之前删除token **/
         if (this.tokenMap[userId]) {
             // /** 登陆获取token，存在删除 **/
             // if (isFirst) return '0'
             delete this.tokenMap[userId]
-            console.log('存在之前删除token', this.tokenMap)
-
         }
         // 将 token 与用户ID关联，保存到内存中
         this.tokenMap[userId] = {
-            userId, token, level, amount, expiry: this.calculateExpiry(this.time.getTime()), // 计算 token 的过期时间
+            userId, token, level, amount, apiCalls, count, expiry: this.calculateExpiry(this.time.getTime()), // 计算 token 的过期时间
         }
-        console.log('generateToken', this.tokenMap)
-
         return token;
     }
 
@@ -55,7 +53,6 @@ class Token {
      * @returns {number|number}
      */
     isTokenExpired(token, userId) {
-        console.log('isTokenExpired', this.tokenMap)
         if (!this.tokenMap.hasOwnProperty(userId)) return 0; // 如果 token 不存在，则视为过期
         if (userId && this.tokenMap[userId].token !== token) return 3;// 如果 token !== userId，则视为过期
         const expiry = this.tokenMap[userId].expiry;//过期时间
@@ -93,7 +90,7 @@ class Token {
      *  删除token
      *  0 过期  1 不过期 2 1小时后获取
      * @param token
-     * @param userId
+     * @param userId 用户名
      * @returns {boolean}
      */
     deleteToken(token, userId) {
@@ -114,19 +111,54 @@ class Token {
         return this.tokenMap[userId]
     }
 
-    /** 设置会员内存信息 **/
-    setMemberInfo({userId, amount, level}) {
+    /**
+     * 设置会员内存信息
+     * @param userId{string}
+     * @param amount {number}
+     * @param level {number}
+     * @param apiCalls{number}
+     */
+    setMemberInfo({userId, amount, level, apiCalls}) {
         console.log('setMemberInfo== this.tokenMap', this.tokenMap)
         console.log('setMemberInfo', userId, amount, level)
         if (!this.tokenMap[userId]) return
         this.tokenMap[userId].amount = amount
         this.tokenMap[userId].level = level
+        this.tokenMap[userId].apiCalls += apiCalls;
         console.log(this.tokenMap[userId])
 
     }
 
+    /**
+     * API 调用次数 扣除-1
+     * @param userId
+     * @param amount
+     * @param level
+     * @param apiCalls {number} 会员API
+     * @param count {number} 免费API
+     */
+    deductApiCalls({userId, amount, level, apiCalls, count}) {
+        if (!this.tokenMap[userId]) return;
 
-    /** 存储用户订单map **/
+        if (!Number(this.tokenMap[userId].count) && !Number(this.tokenMap[userId].apiCalls)) return;
+
+        if (Number(this.tokenMap[userId].count)) {//优先扣除免费额度
+            if (!Number(this.tokenMap[userId].count)) return;
+            this.tokenMap[userId].count -= 1
+        } else {//扣除会员额度
+            if (!Number(this.tokenMap[userId].apiCalls)) return;
+            this.tokenMap[userId].apiCalls -= 1
+        }
+
+        console.log('deductApiCalls', this.tokenMap[userId])
+
+    }
+
+    /**
+     * 存储用户订单map
+     * @param orders {string}订单
+     * @param userId {string} 用户名
+     */
     addOrdersPojo(orders, userId) {
         this.ordersPojo[orders] = {
             orders,

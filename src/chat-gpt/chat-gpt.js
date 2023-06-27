@@ -5,6 +5,7 @@ import express from 'express'
 import cookieParser from 'cookie-parser';
 import tokens from "../token/index.js";
 import HttpsProxyAgent from "https-proxy-agent";
+import mysqlDB from "../my-sql-db/index.js";
 
 const router = express.Router();
 
@@ -15,9 +16,13 @@ const agent = new HttpsProxyAgent(proxy);//in environment dev  proxy
 const API_KEY = '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'; // 替换为您的 OpenAI API 密钥
 
 const options = {
-    hostname: 'api.openai.com', path: '/v1/chat/completions', method: 'POST', headers: {
+    hostname: 'api.openai.com',
+    path: '/v1/chat/completions',
+    method: 'POST',
+    headers: {
         'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}`,
-    }
+    },
+    // agent
 };
 router.get('/events', (req, res) => {
     // 设置响应头
@@ -33,13 +38,30 @@ router.get('/events', (req, res) => {
 
     const parsedUrl = url.parse(req.url);
     const query = querystring.parse(parsedUrl.query);
-    console.log('Received parameters:', query);
     const queryParameter = JSON.parse(query.messageData)
+    const token = queryParameter.token
+    const userId = queryParameter.user
+    const userInfo = tokenInstance.getMemberInfo(userId)
+
+    if (userInfo !== undefined && !Number(userInfo.count)) {
+        if (!Number(userInfo.level)) {
+            return sendEvent(JSON.stringify({
+                message: '!大哥，这50下爽不爽，冲一块钱吧，阿勇不容易，冲一块钱再让你爽一爽',
+                type: 'error'
+            }))
+        } else {
+            if (!Number(userInfo.apiCalls)) {
+                return sendEvent(JSON.stringify({
+                    message: '!感谢大哥对阿勇对支持，最近有点难，冲一块在支持一下吧',
+                    type: 'error'
+                }))
+            }
+        }
+    }
     try {
-        const token = queryParameter.token
-        const userId = queryParameter.user
+
         const isTokenExpired = tokenInstance.isTokenExpired(token, userId)
-        console.log('isTokenExpired', isTokenExpired)
+
         if (isTokenExpired === 2) {
             //刷新token
             const newToken = tokenInstance.refreshUserToken(token)
@@ -49,6 +71,22 @@ router.get('/events', (req, res) => {
             //返回刷新token
             sendEvent(JSON.stringify(message))
         }
+
+        /** token过期 查询是否会员 **/
+        if (isTokenExpired === 3 || !isTokenExpired) {
+            /** 会员更新DB API使用次数 **/
+            if (userInfo.level && Number(userInfo.level)) {//更新会员API次数
+                mysqlDB.updataMemberApiCalls(userInfo.apiCalls, userId, () => {
+                }, () => {
+                })
+                tokenInstance.deleteToken(token, userId)
+            }
+            /** 更新免费次数DB **/
+            mysqlDB.updatAgratisCount(userInfo.count, userId, () => {
+            }, () => {
+            })
+        }
+
         if (isTokenExpired === 3) return sendEvent(JSON.stringify({
             message: '!尊敬的VIP贵宾，您的账号在别的地方登陆，请勿将账号密码泄露他人，您需要点击左下角退出重新登陆',
             type: 'error'
@@ -69,20 +107,20 @@ router.get('/events', (req, res) => {
         res.on('data', (chunk) => {
             const datachunk = Buffer.from(chunk).toString().replace("data:", "");
             const streams = datachunk.trim()
-            // if (streams !== '[DONE]') {
-            // JSON.parse(streams).choices[0].delta.content
+            if (streams.includes('[DONE]')) {
+                /**  更新内存 API使用次数 **/
+                tokenInstance.deductApiCalls({userId})
+            }
             try {
-
-                // const newToken = tokenInstance.refreshUserToken(token)
                 sendEvent(datachunk);
             } catch (e) {
                 sendEvent(datachunk);
             }
-            // }
         });
     });
 
     gptRequest.on('error', (e) => {
+        console.log(e)
         sendEvent(JSON.stringify({
             message: '!尊敬的VIP贵宾，服务器压力大稍冲个1块钱加加速吧，',
             type: 'error'
