@@ -265,7 +265,9 @@ function login({username, password, succeed = succeeds, fail = fails}) {
         queryInformation({
             user_id: results[0].id, succeed: (member) => {
                 console.log('member', member)
-                let memberIfon = {}
+                let memberIfon = {
+                    count: results[0].count//免费次数API
+                }
                 if (member[0] && JSON.stringify(member[0]) !== '{}') {
                     delete member[0].user_id //删除会员表主键字段
                     member[0].expiration_date = utils.formatDateTime(member[0].expiration_date)
@@ -284,7 +286,7 @@ function login({username, password, succeed = succeeds, fail = fails}) {
                         })
                     }
                 }
-                succeed({count: results[0].count})
+                succeed(memberIfon)
             }, fail: (err) => {
                 succeed({count: results[0].count})
             },
