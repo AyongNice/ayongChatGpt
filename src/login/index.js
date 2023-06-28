@@ -18,19 +18,18 @@ router.post('/', (req, res) => {
     //     return res.status(403).json({error: 'Forbidden'});
     // }
     const userInfo = token.getMemberInfo(username)
-    if (JSON.stringify(userInfo) !== '{}') {
-        /** 更新免费次数DB **/
-        mysqlDB.updatAgratisCount(userInfo.count, username, () => {
-            /** 更新会员API次数 **/
-            if (Number(userInfo.level)) {
-                mysqlDB.updataMemberApiCalls(userInfo.apiCalls, username, () => {
-                    login()
-                })
-            } else {
+    if (!userInfo || JSON.stringify(userInfo) === '{}') return login()
+    /** 更新免费次数DB **/
+    mysqlDB.updatAgratisCount(userInfo.count, username, () => {
+        /** 更新会员API次数 **/
+        if (Number(userInfo.level)) {
+            mysqlDB.updataMemberApiCalls(userInfo.apiCalls, username, () => {
                 login()
-            }
-        })
-    }
+            })
+        } else {
+            login()
+        }
+    })
 
     function login() {
         mysqlDB.login({
