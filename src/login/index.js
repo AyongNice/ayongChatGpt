@@ -11,7 +11,6 @@ router.use(cookieParser());
 router.post('/', (req, res) => {
     const {username, password} = req.body;
     console.log(username, password)
-
 // 获取 Referer 值
     const referer = req.headers.referer;
     // 比较 URL
@@ -23,6 +22,14 @@ router.post('/', (req, res) => {
     mysqlDB.login({
         username, password, succeed: (data) => {
             console.log('data---d登陆', data)
+            const userInfo = token.getMemberInfo(username)
+            if (JSON.stringify(userInfo) !== '{}') {
+                if (Number(userInfo.level)) {//更新会员API次数
+                    mysqlDB.updataMemberApiCalls(userInfo.apiCalls, username)
+                }
+                /** 更新免费次数DB **/
+                mysqlDB.updatAgratisCount(userInfo.count, username)
+            }
             const getToken = token.generateToken(username, data.level || 0, data.amount || 0, data.apiCalls || 0, data.count)
             res.status(200).json({message: 'Login successful', token: getToken, code: 1});
         }, fail: (err) => {

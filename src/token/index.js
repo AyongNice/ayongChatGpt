@@ -40,9 +40,7 @@ class Token {
 
     refreshUserToken(userId) {// 刷新用户的 token
         // 检查 token 是否存在于内存中
-        if (this.tokenMap.hasOwnProperty(userId)) {
-            return this.generateToken(this.tokenMap[userId].userId, token)
-        }
+        return this.tokenMap.hasOwnProperty(userId)
     }
 
     /**

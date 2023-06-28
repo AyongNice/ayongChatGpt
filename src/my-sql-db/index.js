@@ -11,8 +11,10 @@ const succeeds = () => {
 }
 // 创建数据库连接池docker build -t
 const pool = mysql.createPool({
-    host: 'localhost', user: 'root', password: '1234', // database: 'ayongnicejiayou',
-    database: 'mydatabase', waitForConnections: true, connectionLimit: 10, queueLimit: 0
+    host: 'localhost', user: 'root', password: '1234',
+    database: 'ayongnicejiayou',
+    // database: 'mydatabase',
+    waitForConnections: true, connectionLimit: 10, queueLimit: 0
 });
 
 
@@ -405,7 +407,7 @@ async function insertMembershipInfo({
  * @param fail{Function} 失败
  * @return void
  */
-async function updataMemberApiCalls(apiCalls, username, succeed, fail) {
+async function updataMemberApiCalls(apiCalls, username, succeed = succeeds, fail = fails) {
     let userId = ''
     try {
         userId = await getUserId({username})
@@ -516,7 +518,7 @@ async function inquireAboutMember(username, succeed) {
 /**
  * 更新主表免费接口次数
  */
-function updatAgratisCount(count, username, succeed, fail) {
+function updatAgratisCount(count, username, succeed = succeeds, fail = fails) {
     const insertMembershipQuery = "UPDATE users SET count=? WHERE username = ?";
     if (typeof count !== 'number' || Number(count) < 0) count = 0
     pool.query(insertMembershipQuery, [count, username], (error, creqacResults) => {
