@@ -3,7 +3,7 @@ import utils from "../utils/utils.js";
 import tokens from "../token/index.js";
 
 const tokenInstance = tokens.getInterest()
-const UNITPRICE = 50; //一元50次
+const UNITPRICE = 100; //一元100次
 const MEMBERPRICE = 3; //每月3元
 const fails = () => {
 }
