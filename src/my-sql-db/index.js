@@ -518,13 +518,13 @@ async function inquireAboutMember(username, succeed) {
 /**
  * 更新主表免费接口次数
  */
-function updatAgratisCount(count, username, succeed = succeeds, fail = fails) {
+function updatAgratisCount(count, username, succeed = succeeds) {
     const insertMembershipQuery = "UPDATE users SET count=? WHERE username = ?";
     if (typeof count !== 'number' || Number(count) < 0) count = 0
     pool.query(insertMembershipQuery, [count, username], (error, creqacResults) => {
         if (error) {
             console.log('更新会员API使用次数:', error);
-            return fail(error);
+            return succeed(error);
         }
         console.log('更新会员API使用次数--ok:', error);
         succeed();

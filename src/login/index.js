@@ -6,7 +6,6 @@ const router = express.Router();
 import tokens from "../token/index.js";
 
 const token = tokens.getInterest()
-console.log("token", token)
 router.use(cookieParser());
 router.post('/', (req, res) => {
     const {username, password} = req.body;
@@ -18,25 +17,34 @@ router.post('/', (req, res) => {
     //     // 请求来源不是你的前端网站特定页面，做相应处理
     //     return res.status(403).json({error: 'Forbidden'});
     // }
-
-    mysqlDB.login({
-        username, password, succeed: (data) => {
-            console.log('data---d登陆', data)
-            const userInfo = token.getMemberInfo(username)
-            if (JSON.stringify(userInfo) !== '{}') {
-                if (Number(userInfo.level)) {//更新会员API次数
-                    mysqlDB.updataMemberApiCalls(userInfo.apiCalls, username)
-                }
-                /** 更新免费次数DB **/
-                mysqlDB.updatAgratisCount(userInfo.count, username)
+    const userInfo = token.getMemberInfo(username)
+    if (JSON.stringify(userInfo) !== '{}') {
+        /** 更新免费次数DB **/
+        mysqlDB.updatAgratisCount(userInfo.count, username, () => {
+            /** 更新会员API次数 **/
+            if (Number(userInfo.level)) {
+                mysqlDB.updataMemberApiCalls(userInfo.apiCalls, username, () => {
+                    login()
+                })
+            } else {
+                login()
             }
-            const getToken = token.generateToken(username, data.level || 0, data.amount || 0, data.apiCalls || 0, data.count)
-            res.status(200).json({message: 'Login successful', token: getToken, code: 1});
-        }, fail: (err) => {
-            res.status(401).json({message: err, code: 0});
+        })
+    }
 
-        }
-    })
+    function login() {
+        mysqlDB.login({
+            username, password, succeed: (data) => {
+                console.log('data---d登陆', data)
+                const getToken = token.generateToken(username, data.level || 0, data.amount || 0, data.apiCalls || 0, data.count)
+                res.status(200).json({message: 'Login successful', token: getToken, code: 1});
+            }, fail: (err) => {
+                res.status(401).json({message: err, code: 0});
+
+            }
+        })
+    }
+
 
 });
 
