@@ -533,6 +533,34 @@ function updatAgratisCount(count, username, succeed = succeeds) {
     });
 }
 
+/**
+ * 修改密码
+ * @param count
+ * @param username
+ * @param succeed
+ */
+function revisePassword({username, password, succeed = succeeds, fail = fails}) {
+    const insertMembershipQuery = "SELECT * FROM membership WHERE user_id = ?";
+    pool.query(insertMembershipQuery, [username], (error, results) => {
+        if (error) {
+            console.log('修改密码:', error);
+            return fail(error);
+        }
+        if (!results.length) {
+            return fail('用户不存在,仔细检查下账号');
+        }
+        const UPDATEPassword = "UPDATE users SET password=? WHERE username = ?";
+        pool.query(UPDATEPassword, [password,username], (error, results) => {
+            if (error) {
+                console.log('修改密码:', error);
+                return fail(error);
+            }
+            succeed();
+        });
+
+    });
+}
+
 export default {
     login,
     addUser,
@@ -546,5 +574,6 @@ export default {
     chargebacks,
     allUserInfo,
     updataMemberApiCalls,
-    updatAgratisCount
+    updatAgratisCount,
+    revisePassword
 }

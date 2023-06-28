@@ -130,5 +130,22 @@ router.post('/enroll', (req, res) => {
     })
 });
 
+/**
+ * 修改密码
+ */
+router.post('/revise-password', (req, res) => {
+    const {username, password, phone, smaCaptcha} = req.body;
 
+    if (smaCaptchaMap[phone] !== smaCaptcha) {
+        return res.status(500).json({message: '验证码不对，请仔细核对验证码'});
+    }
+    mysqlDB.revisePassword({
+        username, password,succeed: () => {
+            res.status(200).json({message: '修改密码成功，请大哥记好您的密码切勿将账号密码泄露他人'});
+        },
+        fail: (err) => {
+            res.status(500).json({message: err});
+        }
+    })
+});
 export default router
