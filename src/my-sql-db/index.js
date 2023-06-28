@@ -261,10 +261,10 @@ function login({username, password, succeed = succeeds, fail = fails}) {
         if (results[0].password !== password) {
             return fail('密码不对');
         }
-        // console.log('results----用户信息', results[0])
+        console.log('results----用户信息', results[0])
         queryInformation({
             user_id: results[0].id, succeed: (member) => {
-                // console.log('member', member)
+                console.log('member', member)
                 let memberIfon = {
                     count: results[0].count//免费次数API
                 }
@@ -327,10 +327,10 @@ function getUserId({
     return new Promise((resolve, reject) => {
         pool.query(getUserIDQuery, [username], (error, results) => {
             if (error) {
-                // console.error('Failed to get user ID:', error);
+                console.error('Failed to get user ID:', error);
                 return reject(error);
             }
-            // console.log('getUserId--results', results)
+            console.log('getUserId--results', results)
             resolve(results[0].id)
         })
     })
@@ -354,18 +354,18 @@ async function insertMembershipInfo({
     try {
         userId = await getUserId({username})
     } catch (error) {
-        // console.log('error---getUserId', error)
+        console.log('error---getUserId', error)
         return fails(error);
     }
     console.log('userId----', userId)
     const getMembershipQuery = "SELECT * FROM membership WHERE user_id = ?";
     pool.query(getMembershipQuery, [userId], (error, results) => {
         if (error) {
-            // console.error('Failed to insert membership info:', error);
+            console.error('Failed to insert membership info:', error);
             return fails(error);
         }
-        // console.log('查询会员信息', results)
-        // console.log('查询会员信息长度', results.length, typeof results.length)
+        console.log('查询会员信息', results)
+        console.log('查询会员信息长度', results.length, typeof results.length)
 // 计算 apiCalls 的值
         const apiCalls = amount * UNITPRICE; //API 调用余额次数
         if (results.length !== 0) { //更新会员
@@ -373,7 +373,7 @@ async function insertMembershipInfo({
             const upLevel = Math.floor(results[0].cumulativeAmount / 5) || 1//level 5块钱张一级别 不到一级强制1级
             pool.query(insertMembershipQuery, [amount, upLevel, apiCalls, amount, userId], (error, updataResults) => {
                 if (error) {
-                    // console.log('更新会员 membership info:', error);
+                    console.log('更新会员 membership info:', error);
                     return fails(error);
                 }
 
@@ -390,11 +390,11 @@ async function insertMembershipInfo({
             const insertMembershipQuery = "INSERT INTO membership (user_id, registration_date, expiration_date, amount, level,cumulativeAmount,apiCalls) VALUES (?, ?, ?, ?, ?,?,?)";
             pool.query(insertMembershipQuery, [userId, registrationDate, expirationDate, amount, upLevel, amount, apiCalls], (error, creqacResults) => {
                 if (error) {
-                    // console.log('新增会员:', error);
+                    console.log('新增会员:', error);
                     return fails(error);
                 }
 
-                // console.log('新增会员前信息---', creqacResults)
+                console.log('新增会员前信息---', creqacResults)
                 const info = {userId: username, level: upLevel, amount}
                 tokenInstance.setMemberInfo(info)
                 succeed(info);
@@ -414,13 +414,13 @@ async function updataMemberApiCalls(apiCalls, username, succeed = succeeds, fail
     try {
         userId = await getUserId({username})
     } catch (error) {
-        // console.log('error---getUserId', error)
+        console.log('error---getUserId', error)
         return fail(error);
     }
     const insertMembershipQuery = "UPDATE membership SET apiCalls=? WHERE user_id = ?";
     pool.query(insertMembershipQuery, [apiCalls, userId], (error, creqacResults) => {
         if (error) {
-            // console.log('更新会员API使用次数:', error);
+            console.log('更新会员API使用次数:', error);
             return fail(error);
         }
         succeed();
@@ -437,7 +437,7 @@ function chargebacks({
     const getMembershipQuery = "SELECT * FROM membership WHERE user_id = ?";
     pool.query(getMembershipQuery, [userId], (error, results) => {
         if (error) {
-            // console.error('Failed to insert membership info:', error);
+            console.error('Failed to insert membership info:', error);
             return fails(error);
         }
         if (!Number(results[0].level)) return //等级0 停止操作
@@ -451,7 +451,7 @@ function chargebacks({
         const insertMembershipQuery = "UPDATE membership amount = amount - ?,level = ?, WHERE user_id = ?"
         pool.query(insertMembershipQuery, [amount, level, userId], (error, results) => {
             if (error) {
-                // console.error('Failed to insert membership info:', error);
+                console.error('Failed to insert membership info:', error);
                 return fails(error);
             }
             succeeds(results);
@@ -487,7 +487,7 @@ async function inquireAboutMember(username, succeed) {
     try {
         user_id = await getUserId({username})
     } catch (error) {
-        // console.log('error---getUserId', error)
+        console.log('error---getUserId', error)
         return fails(error);
     }
     queryInformation({
@@ -525,10 +525,10 @@ function updatAgratisCount(count, username, succeed = succeeds) {
     if (typeof count !== 'number' || Number(count) < 0) count = 0
     pool.query(insertMembershipQuery, [count, username], (error, creqacResults) => {
         if (error) {
-            // console.log('更新会员API使用次数:', error);
+            console.log('更新会员API使用次数:', error);
             return succeed(error);
         }
-        // console.log('更新会员API使用次数--ok:', error);
+        console.log('更新会员API使用次数--ok:', error);
         succeed();
     });
 }
@@ -540,7 +540,10 @@ export default {
     addFeedback,
     delFeedback,
     queryFeedback,
+    queryInformation,
+    getUserId,
     insertMembershipInfo,
+    chargebacks,
     allUserInfo,
     updataMemberApiCalls,
     updatAgratisCount
