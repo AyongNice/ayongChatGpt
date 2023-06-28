@@ -1,7 +1,6 @@
 import express from 'express'
 import mysqlDB from '../my-sql-db/index.js'
 import cookieParser from 'cookie-parser';
-import Enigma from '../Enigma.js'//Enigma
 const router = express.Router();
 import tokens from "../token/index.js";
 
@@ -9,7 +8,7 @@ const token = tokens.getInterest()
 router.use(cookieParser());
 router.post('/', (req, res) => {
     const {username, password} = req.body;
-    console.log(username, password)
+    // console.log(username, password)
 // 获取 Referer 值
     const referer = req.headers.referer;
     // 比较 URL
@@ -34,7 +33,6 @@ router.post('/', (req, res) => {
     function login() {
         mysqlDB.login({
             username, password, succeed: (data) => {
-                console.log('data---d登陆', data)
                 const getToken = token.generateToken(username, data.level || 0, data.amount || 0, data.apiCalls || 0, data.count)
                 res.status(200).json({message: 'Login successful', token: getToken, code: 1});
             }, fail: (err) => {

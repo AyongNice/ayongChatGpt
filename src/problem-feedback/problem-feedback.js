@@ -40,7 +40,7 @@ router.post('/upload', upload.single('image'), (req, res) => {
         }
     }
     // 打印 Cookie 值
-    console.log('req.file', req.file)
+    // console.log('req.file', req.file)
     const token = cookies.token;
     const username = cookies.user;
     const isTokenExpired = tokenInstance.isTokenExpired(token, username)
@@ -79,14 +79,14 @@ router.post('/upload', upload.single('image'), (req, res) => {
 function deleteFilesInFolder(folderPath) {
     fs.readdir(folderPath, (err, files) => {
         if (err) {
-            console.error('Failed to read folder:', err);
+            // console.error('Failed to read folder:', err);
             return;
         }
         files.forEach((file) => {
             const filePath = `${folderPath}/${file}`;
             fs.unlink(filePath, (err) => {
                 if (err) {
-                    console.error('Failed to delete file:', filePath, err);
+                    // console.error('Failed to delete file:', filePath, err);
                 }
             });
         });

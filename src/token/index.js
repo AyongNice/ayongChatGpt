@@ -92,12 +92,9 @@ class Token {
      * @returns {boolean}
      */
     deleteToken(token, userId) {
-        console.log(token, userId)
-        console.log('userId--类型', typeof userId)
         /** 存在之前删除token **/
         if (token && userId && this.tokenMap[userId] && this.tokenMap[userId].userId === userId.toString()) {
             delete this.tokenMap[userId]
-            console.log('deleteToken', this.tokenMap)
             return true
         } else {
             return false
@@ -117,13 +114,12 @@ class Token {
      * @param apiCalls{number}
      */
     setMemberInfo({userId, amount, level, apiCalls}) {
-        console.log('setMemberInfo== this.tokenMap', this.tokenMap)
-        console.log('setMemberInfo', userId, amount, level)
+        // console.log('setMemberInfo', userId, amount, level)
         if (!this.tokenMap[userId]) return
         this.tokenMap[userId].amount = amount
         this.tokenMap[userId].level = level
         this.tokenMap[userId].apiCalls += apiCalls;
-        console.log(this.tokenMap[userId])
+        // console.log(this.tokenMap[userId])
 
     }
 
@@ -148,7 +144,7 @@ class Token {
             this.tokenMap[userId].apiCalls -= 1
         }
 
-        console.log('deductApiCalls', this.tokenMap[userId])
+        // console.log('deductApiCalls', this.tokenMap[userId])
 
     }
 
@@ -170,7 +166,7 @@ class Token {
     }
 
     getOrdersPojoUseid(orders) {
-        console.log('this.ordersPojo', this.ordersPojo)
+        // console.log('this.ordersPojo', this.ordersPojo)
         return this.ordersPojo[orders] ? this.ordersPojo[orders].userId : false
     }
 }

@@ -12,7 +12,6 @@ router.post('/', (req, res) => {
     const token = req.cookies.token;
     const userId = req.cookies.user;
     const userInfo = tokenInstance.getMemberInfo(userId)
-    console.log('tuichu登陆', userInfo)
     if (!userInfo) return res.status(200).json({message: 'Login successful'});
     if (Number(userInfo.level)) {//更新会员API次数
         mysqlDB.updataMemberApiCalls(userInfo.apiCalls, userId, () => {

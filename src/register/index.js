@@ -79,12 +79,12 @@ function sendSms(smsCount,phone) {
         client.SendSms(params, function (err, response) {
             // 请求异常返回，打印异常信息
             if (err) {
-                console.log(err)
+                // console.log(err)
                 reject(err)
                 return
             }
             // 请求正常返回，打印response对象
-            console.log(response)
+            // console.log(response)
             resolve()
         })
         resolve()
@@ -97,7 +97,7 @@ router.post('/sma-verify', (req, res) => {
     mysqlDB.smaVerify({
             phone, succeed: async () => {
                 smaCaptchaMap[phone] = generateRandomNumber()
-                console.log(smaCaptchaMap)
+                // console.log(smaCaptchaMap)
                 try {
                     await sendSms(smaCaptchaMap[phone],phone);
                     res.status(200).json({message: '验证码发送成功', data: smaCaptchaMap[phone]});
@@ -106,7 +106,7 @@ router.post('/sma-verify', (req, res) => {
                 }
             },
             fail: (err) => {
-                console.log('sma-verify--err',err)
+                // console.log('sma-verify--err',err)
                 res.status(500).json({message: err});
             }
         },
@@ -114,9 +114,9 @@ router.post('/sma-verify', (req, res) => {
 });
 router.post('/enroll', (req, res) => {
     const {username, password, phone, smaCaptcha} = req.body;
-    console.log('smaCaptcha', smaCaptcha)
-    console.log('phone', phone)
-    console.log("smaCaptchaMap", smaCaptchaMap)
+    // console.log('smaCaptcha', smaCaptcha)
+    // console.log('phone', phone)
+    // console.log("smaCaptchaMap", smaCaptchaMap)
     if (smaCaptchaMap[phone] !== smaCaptcha) {
         return res.status(500).json({message: '验证码不对，请仔细核对验证码'});
     }

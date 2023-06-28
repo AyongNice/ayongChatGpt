@@ -40,5 +40,5 @@ app.use('/alpay-end', alpayEnd)
 
 // 启动服务
 app.listen(port, () => {
-    console.log('Server started on port' + port);
+    // console.log('Server started on port' + port);
 });

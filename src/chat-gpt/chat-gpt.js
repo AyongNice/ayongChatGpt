@@ -120,7 +120,6 @@ router.get('/events', (req, res) => {
     });
 
     gptRequest.on('error', (e) => {
-        console.log(e)
         sendEvent(JSON.stringify({
             message: '!尊敬的VIP贵宾，服务器压力大稍冲个1块钱加加速吧，',
             type: 'error'
