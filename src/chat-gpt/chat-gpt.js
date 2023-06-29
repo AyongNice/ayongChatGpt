@@ -42,7 +42,7 @@ router.get('/events', (req, res) => {
     const token = queryParameter.token
     const userId = queryParameter.user
     const userInfo = tokenInstance.getMemberInfo(userId)
-
+    console.log('userInfo--caht--', userInfo)
     if (userInfo !== undefined && !Number(userInfo.count)) {
         if (!Number(userInfo.level)) {
             return sendEvent(JSON.stringify({
