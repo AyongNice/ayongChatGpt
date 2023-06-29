@@ -4,12 +4,21 @@ class Token {
     tokenShelfLife = 5 //token过期时间 1小时
     static token; //单例
     ordersPojo = {}
+    Apikey = null//Apikey
 
     static getInterest() {
         if (!this.token) {
             this.token = new Token()
         }
         return this.token
+    }
+
+    setApikey(Apikey) {
+        this.Apikey = Apikey
+    }
+
+    getApikey() {
+        return this.Apikey
     }
 
     /**
