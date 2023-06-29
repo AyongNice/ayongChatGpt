@@ -43,7 +43,8 @@ router.get('/events', (req, res) => {
     const userId = queryParameter.user
     const userInfo = tokenInstance.getMemberInfo(userId)
     console.log('userInfo--caht--', userInfo)
-    if (userInfo !== undefined && !Number(userInfo.count)) {
+    if (!userInfo) return
+    if (userInfo && !Number(userInfo.count)) {
         if (!Number(userInfo.level)) {
             return sendEvent(JSON.stringify({
                 message: '!大哥，这50下爽不爽，冲一块钱吧，阿勇不容易，冲一块钱再让你爽一爽',
