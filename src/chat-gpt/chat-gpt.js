@@ -24,7 +24,7 @@ router.get('/events', (req, res) => {
         headers: {
             'Content-Type': 'application/json', 'Authorization': `Bearer ${tokenInstance.getApikey() || API_KEY}`,
         },
-        agent
+        // agent
     };
     console.log('API_KEY', options.headers)
 
