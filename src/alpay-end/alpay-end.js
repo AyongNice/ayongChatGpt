@@ -56,11 +56,11 @@ router.get('/', (req, res) => {
                 amount: money,
                 succeed: (res) => {
                     console.log('充值成功message--', res)
-                    sendEvent({level: res.level, amount: res.amount})
+                    // sendEvent({level: res.level, amount: res.amount})
                 },
                 fail: (err) => {
                     console.log('results', err)
-                    sendEvent(err)
+                    // sendEvent(err)
                 }
             })
         }

@@ -110,6 +110,11 @@ router.get('/events', (req, res) => {
             if (streams.includes('[DONE]')) {
                 /**  更新内存 API使用次数 **/
                 tokenInstance.deductApiCalls({userId})
+                sendEvent(JSON.stringify({
+                    message: '余额提示',
+                    count: tokenInstance.getMemberInfo(userId).count,
+                    type: 'change'
+                }))
             }
             try {
                 sendEvent(datachunk);

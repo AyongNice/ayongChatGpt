@@ -144,7 +144,7 @@ class Token {
             this.tokenMap[userId].apiCalls -= 1
         }
 
-        // console.log('deductApiCalls', this.tokenMap[userId])
+        console.log('deductApiCalls', this.tokenMap[userId])
 
     }
 

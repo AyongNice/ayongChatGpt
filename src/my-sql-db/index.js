@@ -380,6 +380,7 @@ async function insertMembershipInfo({
                 const info = {
                     userId: username,
                     level: upLevel,
+                    apiCalls: results[0].apiCalls + results[0].amount * UNITPRICE,
                     amount: (Number(results[0].amount) * 100 + Number(amount) * 100) / 100
                 }
                 tokenInstance.setMemberInfo(info)
@@ -393,9 +394,8 @@ async function insertMembershipInfo({
                     console.log('新增会员:', error);
                     return fails(error);
                 }
-
                 console.log('新增会员前信息---', creqacResults)
-                const info = {userId: username, level: upLevel, amount}
+                const info = {userId: username, level: upLevel, amount, apiCalls}
                 tokenInstance.setMemberInfo(info)
                 succeed(info);
             });
@@ -550,7 +550,7 @@ function revisePassword({username, password, succeed = succeeds, fail = fails}) 
             return fail('用户不存在,仔细检查下账号');
         }
         const UPDATEPassword = "UPDATE users SET password=? WHERE username = ?";
-        pool.query(UPDATEPassword, [password,username], (error, results) => {
+        pool.query(UPDATEPassword, [password, username], (error, results) => {
             if (error) {
                 console.log('修改密码:', error);
                 return fail(error);
