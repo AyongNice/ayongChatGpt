@@ -48,13 +48,16 @@ router.get('/events', (req, res) => {
     console.log('userInfo--caht--', userInfo, !userInfo)
     if (!userInfo) return
     if (userInfo && !Number(userInfo.count)) {
+        console.log('额度用完')
         if (!Number(userInfo.level)) {
+            console.log('还非会员----额度用完', !Number(userInfo.level))
             return sendEvent(JSON.stringify({
                 message: '!大哥，这50下爽不爽，冲一块钱吧，阿勇不容易，冲一块钱再让你爽一爽',
                 type: 'error'
             }))
         } else {
-            if (!Number(userInfo.apiCalls) && Number(userInfo.level) !== 6) {
+            console.log('还非会员----额度用完', !userInfo.apiCalls && userInfo.level !== 6)
+            if (!userInfo.apiCalls && userInfo.level !== 6) {
                 return sendEvent(JSON.stringify({
                     message: '!感谢大哥对阿勇对支持，最近有点难，冲一块在支持一下吧',
                     type: 'error'
