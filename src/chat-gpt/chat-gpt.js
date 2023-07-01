@@ -80,15 +80,14 @@ router.get('/events', (req, res) => {
         if (isTokenExpired === 3 || !isTokenExpired) {
             /** 会员更新DB API使用次数 **/
             if (userInfo.level && Number(userInfo.level)) {//更新会员API次数
-                mysqlDB.updataMemberApiCalls(userInfo.apiCalls, userId, () => {
-                }, () => {
-                })
-                tokenInstance.deleteToken(token, userId)
+                mysqlDB.updataMemberApiCalls(userInfo.apiCalls, userId)
             }
-            /** 更新免费次数DB **/
-            mysqlDB.updatAgratisCount(userInfo.count, userId, () => {
-            }, () => {
-            })
+            if (userInfo.count) {
+                /** 更新免费次数DB **/
+                mysqlDB.updatAgratisCount(userInfo.count, userId)
+            }
+            /** deleteToken **/
+            tokenInstance.deleteToken(token, userId)
         }
 
         if (isTokenExpired === 3) return sendEvent(JSON.stringify({

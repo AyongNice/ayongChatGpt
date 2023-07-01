@@ -1,10 +1,12 @@
 class Token {
     tokenMap = {}; //token内存对象
-    time = new Date() //时间对象
     tokenShelfLife = 5 //token过期时间 1小时
     static token; //单例
-    ordersPojo = {}
+    ordersPojo = {} //订单管理
     Apikey = null//Apikey
+    smskeyMap = {//短信验证对象
+
+    }
 
     static getInterest() {
         if (!this.token) {
@@ -41,7 +43,7 @@ class Token {
         }
         // 将 token 与用户ID关联，保存到内存中
         this.tokenMap[userId] = {
-            userId, token, level, amount, apiCalls, count, expiry: this.calculateExpiry(this.time.getTime()), // 计算 token 的过期时间
+            userId, token, level, amount, apiCalls, count, expiry: this.calculateExpiry(Date.now()), // 计算 token 的过期时间
         }
         return token;
     }
@@ -63,7 +65,7 @@ class Token {
         if (!this.tokenMap.hasOwnProperty(userId)) return 0; // 如果 token 不存在，则视为过期
         if (userId && this.tokenMap[userId].token !== token) return 3;// 如果 token !== userId，则视为过期
         const expiry = this.tokenMap[userId].expiry;//过期时间
-        const currentTime = this.time.getTime();//当前时间
+        const currentTime = Date.now();//当前时间
         const shelfLifeRemaining = 3600000 //token保质期剩余1个小时
         if (currentTime < expiry) {
             return currentTime + shelfLifeRemaining < expiry ? 1 : 2
@@ -164,8 +166,7 @@ class Token {
      */
     addOrdersPojo(orders, userId) {
         this.ordersPojo[orders] = {
-            orders,
-            userId
+            orders, userId
         }
     }
 
@@ -177,6 +178,36 @@ class Token {
     getOrdersPojoUseid(orders) {
         // console.log('this.ordersPojo', this.ordersPojo)
         return this.ordersPojo[orders] ? this.ordersPojo[orders].userId : false
+    }
+
+    /**
+     * 新增内存管理对象
+     * @param key {number|string}
+     * @param value {Object<any>}
+     * @param expiration {number}
+     */
+    addSmskeyMap(key, value, expiration = 30) {
+        for (const keyName in value) {
+            if (!this.smskeyMap[key]) this.smskeyMap[key] = {}
+            this.smskeyMap[key][keyName] = value[keyName]
+        }
+        this.smskeyMap[key]['expiration'] = Date.now() + (expiration * 1000)
+        console.log(this.smskeyMap[key])
+    }
+
+    /**
+     * 获取内存管理对象
+     * @param key {number|string}
+     * @return  {Object<any>| null}
+     */
+    readSmskeyMap(key) {
+        console.log(this.smskeyMap[key])
+        if (!this.smskeyMap[key] || JSON.stringify(this.smskeyMap[key]) === '{}') return null
+        if (Date.now() > this.smskeyMap[key]['expiration']) {
+            delete this.smskeyMap[key]
+            return null
+        }
+        return this.smskeyMap[key]
     }
 }
 
