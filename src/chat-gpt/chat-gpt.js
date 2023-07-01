@@ -45,12 +45,12 @@ router.get('/events', (req, res) => {
     const token = queryParameter.token
     const userId = queryParameter.user
     const userInfo = tokenInstance.getMemberInfo(userId)
-    console.log('userInfo--caht--', userInfo, !userInfo)
+    console.log('userInfo--caht--', userInfo, !userInfo, !userInfo.count)
     if (!userInfo) return
     if (!userInfo.count) {
-        console.log('额度用完')
+        console.log('免费额度用完')
         if (userInfo.level) {
-            console.log('会员----额度用完', !userInfo.apiCalls && userInfo.level !== 6)
+            console.log('会员----情况查余额度', !userInfo.apiCalls && userInfo.level !== 6)
             if (!userInfo.apiCalls && userInfo.level !== 6) {
                 return sendEvent(JSON.stringify({
                     message: '!感谢大哥对阿勇对支持，最近有点难，冲一块在支持一下吧',
@@ -58,7 +58,7 @@ router.get('/events', (req, res) => {
                 }))
             }
         } else {
-            console.log('还非会员----额度用完', !Number(userInfo.level))
+            console.log('非会员----额度用完', userInfo.level)
             return sendEvent(JSON.stringify({
                 message: '!大哥，这50下爽不爽，冲一块钱吧，阿勇不容易，冲一块钱再让你爽一爽',
                 type: 'error'
@@ -66,6 +66,7 @@ router.get('/events', (req, res) => {
 
         }
     }
+
     try {
 
         const isTokenExpired = tokenInstance.isTokenExpired(token, userId)

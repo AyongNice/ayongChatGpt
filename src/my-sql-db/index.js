@@ -137,9 +137,9 @@ const createMembershipTable = (callback = () => {
   registration_date DATETIME NOT NULL,
   expiration_date DATETIME NOT NULL,
   amount DECIMAL(10, 2) NOT NULL,
-  cumulativeAmount DECIMAL(10, 2) NOT NULL,
   level INT NOT NULL,
-  apiCalls INT DEFAULT 0,
+   cumulativeAmount DECIMAL(10, 2) NOT NULL,
+  apiCalls INT DEFAULT 50,
   FOREIGN KEY (user_id) REFERENCES users (id)
     )
   `;
@@ -186,6 +186,16 @@ pool.getConnection((error, connection) => {
         return;
     }
     console.log('Connected to database');
+    //
+    // const insertMembershipQuery = "INSERT INTO membership (user_id, registration_date, expiration_date, amount,cumulativeAmount, level,apiCalls) VALUES (?, ?, ?, ?, ?,?,?)";
+    // pool.query(insertMembershipQuery, [3, '2023-06-30 04:41:27', '2023-08-28 04:41:27', 2, 2, 2, 50], (error, creqacResults) => {
+    //     if (error) {
+    //         console.log('新增会员:', error);
+    //
+    //     }
+    //     console.log('新增会员前信息---', creqacResults)
+    //
+    // });
     /**
      *  创建用主户表
      */
