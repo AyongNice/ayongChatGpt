@@ -111,6 +111,7 @@ router.get('/events', (req, res) => {
             const datachunk = Buffer.from(chunk).toString().replace("data:", "");
             const streams = datachunk.trim()
             if (streams.includes('[DONE]')) {
+                console.log('streams---[DONE]', userInfo)
                 /**  更新内存 API使用次数 **/
                 tokenInstance.deductApiCalls({userId})
                 sendEvent(JSON.stringify({
