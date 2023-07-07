@@ -34,7 +34,7 @@ router.post('/', (req, res) => {
                 const getToken = token.generateToken(username, data.level || 0, data.amount || 0, data.apiCalls || 0, data.count)
                 res.status(200).json({message: 'Login successful', token: getToken, code: 1});
             }, fail: (err) => {
-                res.status(401).json({message: '错误,请联系ayong', code: 0});
+                res.status(401).json({message: '尊敬的SVP用户,您需要先注册账号哟', code: 0});
 
             }
         })
