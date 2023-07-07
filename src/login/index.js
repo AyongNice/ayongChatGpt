@@ -13,11 +13,7 @@ router.post('/', (req, res) => {
 // 获取 Referer 值
     const referer = req.headers.referer;
     console.log('referer', referer)
-    // 比较 URL
-    // if (referer !== 'https://your-frontend-domain.com/specific-page') {
-    //     // 请求来源不是你的前端网站特定页面，做相应处理
-    //     return res.status(403).json({error: 'Forbidden'});
-    // }
+    if (referer !== 'http://ayongnice.love/chatgpt/') return res.status(500).json({message: 'xxxxx', code: 0});
     const userInfo = token.getMemberInfo(username)
     if (!userInfo || JSON.stringify(userInfo) === '{}') return login()
     /** 更新免费次数DB **/
@@ -38,7 +34,7 @@ router.post('/', (req, res) => {
                 const getToken = token.generateToken(username, data.level || 0, data.amount || 0, data.apiCalls || 0, data.count)
                 res.status(200).json({message: 'Login successful', token: getToken, code: 1});
             }, fail: (err) => {
-                res.status(401).json({message: err, code: 0});
+                res.status(401).json({message: '错误,请联系ayong', code: 0});
 
             }
         })

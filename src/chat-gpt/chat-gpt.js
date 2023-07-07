@@ -13,10 +13,12 @@ const tokenInstance = tokens.getInterest()
 router.use(cookieParser());
 const proxy = 'http://127.0.0.1:7890'; // 代理地址
 const agent = new HttpsProxyAgent(proxy);//in environment dev  proxy
-const API_KEY = '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'; // 替换为您的 OpenAI API 密钥
-
+const API_KEY = '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'; // 替换为您的 OpenAI API 密钥
 
 router.get('/events', (req, res) => {
+    const referer = req.headers.referer;
+    if (referer !== 'http://ayongnice.love/chatgpt/') return res.status(500).json({message: 'xxxxx', code: 0});
+
     const options = {
         hostname: 'api.openai.com',
         path: '/v1/chat/completions',
@@ -45,7 +47,7 @@ router.get('/events', (req, res) => {
     const token = queryParameter.token
     const userId = queryParameter.user
     const userInfo = tokenInstance.getMemberInfo(userId)
-    console.log('userInfo--caht--', userInfo, !userInfo, !userInfo.count)
+    console.log('userInfo--caht--', userInfo)
     if (!userInfo) return
     if (!userInfo.count) {
         console.log('免费额度用完')
@@ -116,7 +118,7 @@ router.get('/events', (req, res) => {
             const datachunk = Buffer.from(chunk).toString().replace("data:", "");
             const streams = datachunk.trim()
             if (streams.includes('[DONE]')) {
-                console.log('streams---[DONE]', userInfo)
+                console.log('streams---[DONE]', userInfo, streams)
                 /**  更新内存 API使用次数 **/
                 tokenInstance.deductApiCalls({userId})
                 sendEvent(JSON.stringify({

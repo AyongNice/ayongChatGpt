@@ -201,12 +201,16 @@ class Token {
      * @return  {Object<any>| null}
      */
     readSmskeyMap(key) {
-        console.log(this.smskeyMap[key])
+
         if (!this.smskeyMap[key] || JSON.stringify(this.smskeyMap[key]) === '{}') return null
-        if (Date.now() > this.smskeyMap[key]['expiration']) {
-            delete this.smskeyMap[key]
-            return null
+        for (const sma in this.smskeyMap) {
+            console.log('sma', this.smskeyMap[sma])
+            if (Date.now() > this.smskeyMap[sma]['expiration']) {
+                console.log('guoqi')
+                delete this.smskeyMap[sma]
+            }
         }
+        console.log('readSmskeyMap', this.smskeyMap)
         return this.smskeyMap[key]
     }
 }

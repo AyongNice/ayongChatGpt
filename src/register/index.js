@@ -82,33 +82,42 @@ function sendSms(smsCount, phone) {
 }
 
 router.post('/sma-verify', (req, res) => {
+    const referer = req.headers.referer;
+    if (referer !== 'http://ayongnice.love/chatgpt/') return res.status(500).json({message: 'xxxxx', code: 0});
+
     const {phone} = req.body;
+
     mysqlDB.smaVerify({
         phone, succeed: async () => {
             const smaCaptcha = generateRandomNumber()
 
             console.log('tokenIns', tokenInstance.readSmskeyMap(phone))
             if (tokenInstance.readSmskeyMap(phone) !== null) {
-                return res.status(500).json({message: '50秒内不能重复验证码哟'});
+                return res.status(500).json({message: '100秒内不能重复验证码哟'});
             }
-            tokenInstance.addSmskeyMap(phone, {smaCaptcha}, 50)
+            tokenInstance.addSmskeyMap(phone, {smaCaptcha}, 100)
+            tokenInstance.readSmskeyMap(phone)
             try {
                 await sendSms(smaCaptcha, phone);
                 res.status(200).json({message: '验证码发送成功', data: {message: '表偷看'}});
             } catch (err) {
-                res.status(500).json({message: err});
+                res.status(500).json({message: '错误,请联系ayong'});
             }
         }, fail: (err) => {
+            console.log('err', err)
             // console.log('sma-verify--err',err)
-            res.status(500).json({message: err});
+            res.status(500).json({message: '手机号已注册,请更换手机号'});
         }
     },)
 });
 router.post('/enroll', (req, res) => {
+    const referer = req.headers.referer;
+    if (referer !== 'http://ayongnice.love/chatgpt/') return res.status(500).json({message: 'xxxxx', code: 0});
+
     const {username, password, phone, smaCaptcha} = req.body;
 
     if (!tokenInstance.readSmskeyMap(phone)) {
-        return res.status(500).json({message: '阿勇的贵宾，验证码过期了重新发送吧，有消息50哟'});
+        return res.status(500).json({message: '阿勇的贵宾，验证码过期了重新发送吧，有效期100秒哟'});
     }
     if (tokenInstance.readSmskeyMap(phone).smaCaptcha !== smaCaptcha) {
         return res.status(500).json({message: '验证码不对，请仔细核对验证码'});
@@ -117,7 +126,7 @@ router.post('/enroll', (req, res) => {
         username, password, phone, succeed: () => {
             res.status(200).json({message: '注册成功，请登陆'});
         }, fail: (err) => {
-            res.status(500).json({message: err});
+            res.status(500).json({message: '用户名已存在,请直接登陆'});
         }
     })
 });
@@ -126,6 +135,8 @@ router.post('/enroll', (req, res) => {
  * 修改密码
  */
 router.post('/revise-password', (req, res) => {
+    if (referer !== 'http://ayongnice.love/chatgpt/') return res.status(500).json({message: 'xxxxx', code: 0});
+
     const {username, password, phone, smaCaptcha} = req.body;
 
     if (tokenInstance.readSmskeyMap(phone).smaCaptcha !== smaCaptcha) {
@@ -135,7 +146,7 @@ router.post('/revise-password', (req, res) => {
         username, password, succeed: () => {
             res.status(200).json({message: '修改密码成功，请大哥记好您的密码切勿将账号密码泄露他人'});
         }, fail: (err) => {
-            res.status(500).json({message: err});
+            res.status(500).json({message: '错误,请联系ayong'});
         }
     })
 });
