@@ -17,7 +17,7 @@ const API_KEY = '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'; // 替换
 
 router.get('/events', (req, res) => {
     const referer = req.headers.referer;
-    if (referer !== 'http://ayongnice.love/chatgpt/') return res.status(500).json({message: 'xxxxx', code: 0});
+    if (referer !== 'http://ayongnice.love/chatgpt') return res.status(500).json({message: 'xxxxx', code: 0});
 
     const options = {
         hostname: 'api.openai.com',
@@ -47,32 +47,9 @@ router.get('/events', (req, res) => {
     const token = queryParameter.token
     const userId = queryParameter.user
     const userInfo = tokenInstance.getMemberInfo(userId)
-    console.log('userInfo--caht--', userInfo)
-    if (!userInfo) return
-    if (!userInfo.count) {
-        console.log('免费额度用完')
-        if (userInfo.level) {
-            console.log('会员----情况查余额度', !userInfo.apiCalls && userInfo.level !== 6)
-            if (!userInfo.apiCalls && userInfo.level !== 6) {
-                return sendEvent(JSON.stringify({
-                    message: '!感谢大哥对阿勇对支持，最近有点难，冲一块在支持一下吧',
-                    type: 'error'
-                }))
-            }
-        } else {
-            console.log('非会员----额度用完', userInfo.level)
-            return sendEvent(JSON.stringify({
-                message: '!大哥，这50下爽不爽，冲一块钱吧，阿勇不容易，冲一块钱再让你爽一爽',
-                type: 'error'
-            }))
-
-        }
-    }
-
     try {
-
         const isTokenExpired = tokenInstance.isTokenExpired(token, userId)
-
+        console.log('isTokenExpired', isTokenExpired)
         if (isTokenExpired === 2) {
             //刷新token
             const newToken = tokenInstance.refreshUserToken(token)
@@ -108,6 +85,29 @@ router.get('/events', (req, res) => {
     } catch (e) {
         console.log(e)
     }
+    console.log('userInfo--caht--', userInfo)
+    if (!userInfo) return
+    if (!userInfo.count) {
+        console.log('免费额度用完')
+        if (userInfo.level) {
+            console.log('会员----情况查余额度', !userInfo.apiCalls && userInfo.level !== 6)
+            if (!userInfo.apiCalls && userInfo.level !== 6) {
+                return sendEvent(JSON.stringify({
+                    message: '!感谢大哥对阿勇对支持，最近有点难，冲一块在支持一下吧',
+                    type: 'error'
+                }))
+            }
+        } else {
+            console.log('非会员----额度用完', userInfo.level)
+            return sendEvent(JSON.stringify({
+                message: '!大哥，这50下爽不爽，冲一块钱吧，阿勇不容易，冲一块钱再让你爽一爽',
+                type: 'error'
+            }))
+
+        }
+    }
+
+
     const postData = JSON.stringify({
         "stream": true, "model": "gpt-3.5-turbo", "messages": [{
             "role": "user", "content": queryParameter.data

@@ -83,7 +83,7 @@ function sendSms(smsCount, phone) {
 
 router.post('/sma-verify', (req, res) => {
     const referer = req.headers.referer;
-    if (referer !== 'http://ayongnice.love/chatgpt/') return res.status(500).json({message: 'xxxxx', code: 0});
+    if (referer !== 'http://ayongnice.love/chatgpt') return res.status(500).json({message: 'xxxxx', code: 0});
 
     const {phone} = req.body;
 
@@ -112,7 +112,7 @@ router.post('/sma-verify', (req, res) => {
 });
 router.post('/enroll', (req, res) => {
     const referer = req.headers.referer;
-    if (referer !== 'http://ayongnice.love/chatgpt/') return res.status(500).json({message: 'xxxxx', code: 0});
+    if (referer !== 'http://ayongnice.love/chatgpt') return res.status(500).json({message: 'xxxxx', code: 0});
 
     const {username, password, phone, smaCaptcha} = req.body;
 
@@ -135,7 +135,7 @@ router.post('/enroll', (req, res) => {
  * 修改密码
  */
 router.post('/revise-password', (req, res) => {
-    if (referer !== 'http://ayongnice.love/chatgpt/') return res.status(500).json({message: 'xxxxx', code: 0});
+    if (referer !== 'http://ayongnice.love/chatgpt') return res.status(500).json({message: 'xxxxx', code: 0});
 
     const {username, password, phone, smaCaptcha} = req.body;
 

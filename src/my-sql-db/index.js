@@ -190,7 +190,7 @@ pool.getConnection((error, connection) => {
     console.log('Connected to database');
     //
     // const insertMembershipQuery = "INSERT INTO membership (user_id, registration_date, expiration_date, amount,cumulativeAmount, level,apiCalls) VALUES (?, ?, ?, ?, ?,?,?)";
-    // pool.query(insertMembershipQuery, [3, '2023-06-30 04:41:27', '2023-08-28 04:41:27', 2, 2, 2, 50], (error, creqacResults) => {
+    // pool.query(insertMembershipQuery, [1, '2023-06-30 04:41:27', '2023-08-28 04:41:27', 2, 2, 2, 50], (error, creqacResults) => {
     //     if (error) {
     //         console.log('新增会员:', error);
     //

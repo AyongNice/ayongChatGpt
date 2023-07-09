@@ -9,11 +9,10 @@ const token = tokens.getInterest()
 router.use(cookieParser());
 router.post('/', (req, res) => {
     const {username, password} = req.body;
-    // console.log(username, password)
 // 获取 Referer 值
     const referer = req.headers.referer;
     console.log('referer', referer)
-    if (referer !== 'http://ayongnice.love/chatgpt/') return res.status(500).json({message: 'xxxxx', code: 0});
+    if (referer !== 'http://ayongnice.love/chatgpt') return res.status(500).json({message: 'xxxxx', code: 0});
     const userInfo = token.getMemberInfo(username)
     if (!userInfo || JSON.stringify(userInfo) === '{}') return login()
     /** 更新免费次数DB **/
