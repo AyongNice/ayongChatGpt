@@ -12,7 +12,7 @@ router.post('/', (req, res) => {
 // 获取 Referer 值
     const referer = req.headers.referer;
     console.log('referer', referer)
-    if (!fontUrlAddress.includes(referer)) return res.status(500).json({message: 'xxxxx', code: 0});
+    if (!fontUrlAddress.includes(referer.slice(0,29))) return res.status(500).json({message: 'xxxxx', code: 0});
     const userInfo = token.getMemberInfo(username)
     if (!userInfo || JSON.stringify(userInfo) === '{}') return login()
     /** 更新免费次数DB **/

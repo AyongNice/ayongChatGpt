@@ -17,7 +17,7 @@ const API_KEY = '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'; // 替换
 import {fontUrlAddress}from '../utils/utils.js'
 router.get('/events', (req, res) => {
     const referer = req.headers.referer;
-    if (!fontUrlAddress.includes(referer)) return res.status(500).json({message: 'xxxxx', code: 0});
+    if (!fontUrlAddress.includes(referer.slice(0,29))) return res.status(500).json({message: 'xxxxx', code: 0});
 
     const options = {
         hostname: 'api.openai.com',
