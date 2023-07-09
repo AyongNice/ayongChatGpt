@@ -6,6 +6,7 @@ const router = express.Router();
 import Token from '../token/index.js'
 import countenanced from "tencentcloud-sdk-nodejs"
 import tokens from "../token/index.js";
+import {fontUrlAddress} from "../utils/utils.js";
 
 const tokenInstance = tokens.getInterest()
 
@@ -83,7 +84,7 @@ function sendSms(smsCount, phone) {
 
 router.post('/sma-verify', (req, res) => {
     const referer = req.headers.referer;
-    if (referer !== 'http://ayongnice.love/chatgpt') return res.status(500).json({message: 'xxxxx', code: 0});
+    if (!fontUrlAddress.includes(referer)) return res.status(500).json({message: 'xxxxx', code: 0});
 
     const {phone} = req.body;
 
@@ -112,7 +113,7 @@ router.post('/sma-verify', (req, res) => {
 });
 router.post('/enroll', (req, res) => {
     const referer = req.headers.referer;
-    if (referer !== 'http://ayongnice.love/chatgpt') return res.status(500).json({message: 'xxxxx', code: 0});
+    if (!fontUrlAddress.includes(referer)) return res.status(500).json({message: 'xxxxx', code: 0});
 
     const {username, password, phone, smaCaptcha} = req.body;
 
@@ -135,7 +136,8 @@ router.post('/enroll', (req, res) => {
  * 修改密码
  */
 router.post('/revise-password', (req, res) => {
-    if (referer !== 'http://ayongnice.love/chatgpt') return res.status(500).json({message: 'xxxxx', code: 0});
+    const referer = req.headers.referer;
+    if (!fontUrlAddress.includes(referer)) return res.status(500).json({message: 'xxxxx', code: 0});
 
     const {username, password, phone, smaCaptcha} = req.body;
 

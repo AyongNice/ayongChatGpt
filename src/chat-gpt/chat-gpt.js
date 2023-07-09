@@ -14,10 +14,10 @@ router.use(cookieParser());
 const proxy = 'http://127.0.0.1:7890'; // 代理地址
 const agent = new HttpsProxyAgent(proxy);//in environment dev  proxy
 const API_KEY = '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'; // 替换为您的 OpenAI API 密钥
-
+import {fontUrlAddress}from '../utils/utils.js'
 router.get('/events', (req, res) => {
     const referer = req.headers.referer;
-    if (referer !== 'http://ayongnice.love/chatgpt') return res.status(500).json({message: 'xxxxx', code: 0});
+    if (!fontUrlAddress.includes(referer)) return res.status(500).json({message: 'xxxxx', code: 0});
 
     const options = {
         hostname: 'api.openai.com',

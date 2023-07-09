@@ -18,7 +18,8 @@ function formatDateTime(dateTimeString) {
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
+export const fontUrlAddress = 'http://ayongnice.love/chatgpt'
 export default {
     getDATETIME,
-    formatDateTime
+    formatDateTime,
 }
