@@ -11,7 +11,7 @@ const succeeds = () => {
 }
 // 创建数据库连接池docker build -t
 const pool = mysql.createPool({
-    host: 'localhost',
+    host: 'yong',
     user: 'root',
     password: '7758521Aa.',
     database: 'zixian'
