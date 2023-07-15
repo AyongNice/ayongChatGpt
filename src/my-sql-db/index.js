@@ -13,7 +13,7 @@ const succeeds = () => {
 const pool = mysql.createPool({
     host: 'localhost', user: 'root',
     // password: '7785521Aa.',
-    password: '1234',
+    password: '7758521Aa.',
     database: 'zixian',
     waitForConnections: true, connectionLimit: 10, queueLimit: 0
 });
