@@ -11,11 +11,11 @@ const succeeds = () => {
 }
 // 创建数据库连接池docker build -t
 const pool = mysql.createPool({
-    host: '13.51.250.185',
-    port: 3306,
-    user: 'root',
-    password: '7758521Aa.',
-    database: 'zixian'
+    host: 'localhost', user: 'root',
+    // password: '7785521Aa.',
+    password: '1234',
+    database: 'zixian',
+    waitForConnections: true, connectionLimit: 10, queueLimit: 0
 });
 
 
